@@ -1,5 +1,5 @@
 const config = {
-  guildId: "",
+  guildId: "1460375600140386354",
 
   canalId: "1527420188503576629",
 
