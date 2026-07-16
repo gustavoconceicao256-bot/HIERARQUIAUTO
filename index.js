@@ -3,6 +3,7 @@ import dotenv from "dotenv";
 
 import readyEvent from "./events/ready.js";
 import guildMemberUpdateEvent from "./events/guildMemberUpdate.js";
+import { enviarHierarquia } from "./utils/enviarHierarquia.js";
 
 dotenv.config();
 
@@ -14,8 +15,10 @@ const client = new Client({
 });
 
 // Evento Ready
-client.once("ready", () => {
+client.once("ready", async () => {
   readyEvent.execute(client);
+
+  await enviarHierarquia(client);
 });
 
 // Evento de atualização de cargos
