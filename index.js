@@ -20,6 +20,7 @@ client.once("ready", () => {
 
 // Evento de atualização de cargos
 client.on("guildMemberUpdate", (oldMember, newMember) => {
+  console.log("Evento de cargo detectado!");
   guildMemberUpdateEvent.execute(oldMember, newMember);
 });
 
