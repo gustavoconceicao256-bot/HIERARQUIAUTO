@@ -14,7 +14,7 @@ app.get("/", (req, res) => {
   res.send("Bot de hierarquia online!");
 });
 
-// Porta do Render
+// Porta correta para o Render
 const PORT = process.env.PORT || 3000;
 
 app.listen(PORT, () => {
