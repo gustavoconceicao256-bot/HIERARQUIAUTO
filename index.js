@@ -14,8 +14,11 @@ app.get("/", (req, res) => {
   res.send("Bot de hierarquia online!");
 });
 
-app.listen(3000, () => {
-  console.log("🌐 Servidor web iniciado na porta 3000");
+// Porta do Render
+const PORT = process.env.PORT || 3000;
+
+app.listen(PORT, () => {
+  console.log(`🌐 Servidor web iniciado na porta ${PORT}`);
 });
 
 const client = new Client({
@@ -35,6 +38,7 @@ client.once("ready", async () => {
 // Atualização de cargos
 client.on("guildMemberUpdate", (oldMember, newMember) => {
   console.log("Evento de cargo detectado!");
+
   guildMemberUpdateEvent.execute(oldMember, newMember);
 });
 
