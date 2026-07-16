@@ -1,13 +1,11 @@
-export default {
+const config = {
   guildId: "",
-  canalHierarquia: "",
-  mensagemHierarquia: "",
+  canalId: "",
+  mensagemId: "",
 
   cargos: [
-    {
-      nome: "Fundador",
-      id: "",
-      cor: 0xFFD700
-    }
+    // Vamos adicionar os cargos depois
   ]
 };
+
+export default config;
