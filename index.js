@@ -1,6 +1,9 @@
 import { Client, GatewayIntentBits } from "discord.js";
 import dotenv from "dotenv";
 
+import readyEvent from "./events/ready.js";
+import guildMemberUpdateEvent from "./events/guildMemberUpdate.js";
+
 dotenv.config();
 
 const client = new Client({
@@ -10,8 +13,14 @@ const client = new Client({
   ]
 });
 
+// Evento Ready
 client.once("ready", () => {
-  console.log(`✅ ${client.user.tag} está online!`);
+  readyEvent.execute(client);
+});
+
+// Evento de atualização de cargos
+client.on("guildMemberUpdate", (oldMember, newMember) => {
+  guildMemberUpdateEvent.execute(oldMember, newMember);
 });
 
 client.login(process.env.TOKEN);
