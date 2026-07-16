@@ -28,6 +28,9 @@ const client = new Client({
   ]
 });
 
+// Teste do token
+console.log("TOKEN EXISTE?", !!process.env.TOKEN);
+
 // Bot online
 client.once("ready", async () => {
   readyEvent.execute(client);
