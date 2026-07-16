@@ -28,11 +28,13 @@ const client = new Client({
   ]
 });
 
-// Teste do token
+// Teste para saber se o Render está lendo o TOKEN
 console.log("TOKEN EXISTE?", !!process.env.TOKEN);
 
 // Bot online
 client.once("ready", async () => {
+  console.log(`✅ ${client.user.tag} está online!`);
+
   readyEvent.execute(client);
 
   await enviarHierarquia(client);
