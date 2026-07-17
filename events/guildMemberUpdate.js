@@ -1,3 +1,5 @@
+import { enviarHierarquia } from "../utils/enviarHierarquia.js";
+
 export default {
   name: "guildMemberUpdate",
 
@@ -16,17 +18,17 @@ export default {
 
     console.log(`👤 ${newMember.user.tag} teve os cargos atualizados.`);
 
-    if (adicionados.size > 0) {
+    if (adicionados.size > 0 || removidos.size > 0) {
+
       adicionados.forEach(cargo => {
         console.log(`➕ Cargo adicionado: ${cargo.name}`);
       });
-    }
 
-    if (removidos.size > 0) {
       removidos.forEach(cargo => {
         console.log(`➖ Cargo removido: ${cargo.name}`);
       });
-    }
 
+      await enviarHierarquia(newMember.client);
+    }
   }
 };
