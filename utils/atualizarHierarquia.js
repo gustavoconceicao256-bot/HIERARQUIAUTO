@@ -1,21 +1,37 @@
 import { EmbedBuilder } from "discord.js";
 import fs from "fs";
+import path from "path";
+import { fileURLToPath } from "url";
 import config from "../config.js";
 
-const arquivoMensagens = "./utils/mensagensHierarquia.json";
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+
+const arquivoMensagens = path.join(
+  __dirname,
+  "mensagensHierarquia.json"
+);
+
+
 
 
 function lerMensagens() {
 
   if (!fs.existsSync(arquivoMensagens)) {
+
     return {};
+
   }
+
 
   try {
 
     return JSON.parse(
       fs.readFileSync(arquivoMensagens, "utf8")
     );
+
 
   } catch {
 
@@ -27,14 +43,24 @@ function lerMensagens() {
 
 
 
+
+
 function salvarMensagens(dados) {
 
+
   fs.writeFileSync(
+
     arquivoMensagens,
+
     JSON.stringify(dados, null, 2)
+
   );
 
+
 }
+
+
+
 
 
 
@@ -43,10 +69,14 @@ function salvarMensagens(dados) {
 export async function atualizarHierarquia(client) {
 
 
+
   const canal = await client.channels.fetch(config.canalId);
 
 
+
   const mensagensSalvas = lerMensagens();
+
+
 
 
 
@@ -54,7 +84,10 @@ export async function atualizarHierarquia(client) {
 
 
 
+
+
   const listaCargos = {};
+
 
 
 
@@ -69,9 +102,12 @@ export async function atualizarHierarquia(client) {
 
 
 
+
+
   // deixa somente o cargo mais alto
 
   membros.forEach(member => {
+
 
 
     let maior = -1;
@@ -80,20 +116,26 @@ export async function atualizarHierarquia(client) {
 
 
 
+
     config.cargos.forEach(cargo => {
 
 
+
       const role = canal.guild.roles.cache.get(cargo.id);
+
 
 
       if (!role) return;
 
 
 
+
       if (member.roles.cache.has(cargo.id)) {
 
 
+
         if (role.position > maior) {
+
 
 
           maior = role.position;
@@ -101,25 +143,35 @@ export async function atualizarHierarquia(client) {
           cargoEscolhido = cargo;
 
 
+
         }
 
       }
+
 
 
     });
 
 
 
+
+
     if (cargoEscolhido) {
+
 
 
       listaCargos[cargoEscolhido.id].push(member);
 
 
+
     }
 
 
+
   });
+
+
+
 
 
 
@@ -130,7 +182,9 @@ export async function atualizarHierarquia(client) {
 
 
 
+
     const role = canal.guild.roles.cache.get(cargo.id);
+
 
 
 
@@ -139,7 +193,9 @@ export async function atualizarHierarquia(client) {
 
 
 
+
     const membrosCargo = listaCargos[cargo.id];
+
 
 
 
@@ -155,13 +211,19 @@ export async function atualizarHierarquia(client) {
 
 
 
+
+
     const horario = new Date().toLocaleTimeString("pt-BR", {
+
 
       timeZone: "America/Sao_Paulo",
 
+
       hour: "2-digit",
 
+
       minute: "2-digit"
+
 
     });
 
@@ -170,18 +232,32 @@ export async function atualizarHierarquia(client) {
 
 
 
+
+
     const embed = new EmbedBuilder()
+
+
 
       .setDescription(lista)
 
+
+
       .setColor(role.color || "#2b2d31")
+
+
 
       .setFooter({
 
+
         text:
+
         `♻️ Atualizado Automaticamente 24h | Última Atualização: ${horario}`
 
+
       });
+
+
+
 
 
 
@@ -191,17 +267,23 @@ export async function atualizarHierarquia(client) {
     const dadosMensagem = {
 
 
+
       content: `# ${role} - [${membrosCargo.length}] membros`,
+
 
 
       allowedMentions: {
 
+
         roles: [role.id]
+
 
       },
 
 
+
       embeds: [embed]
+
 
 
     };
@@ -212,20 +294,29 @@ export async function atualizarHierarquia(client) {
 
 
 
-    // EDITA A MENSAGEM DESSE CARGO
+
+
+    // EDITA A MENSAGEM DO CARGO
 
     if (mensagensSalvas[cargo.id]) {
+
 
 
       try {
 
 
+
         const mensagem = await canal.messages.fetch(
+
           mensagensSalvas[cargo.id]
+
         );
 
 
+
+
         await mensagem.edit(dadosMensagem);
+
 
 
 
@@ -233,16 +324,22 @@ export async function atualizarHierarquia(client) {
 
 
 
+
       } catch {
+
 
 
         delete mensagensSalvas[cargo.id];
 
 
+
       }
 
 
+
     }
+
+
 
 
 
@@ -260,7 +357,10 @@ export async function atualizarHierarquia(client) {
 
 
 
+
   }
+
+
 
 
 
@@ -272,8 +372,14 @@ export async function atualizarHierarquia(client) {
 
 
 
+
+
+  console.log("📁 Arquivo salvo em:", arquivoMensagens);
+
   console.log("📁 IDs salvos:", mensagensSalvas);
 
   console.log("♻️ Hierarquia sincronizada!");
+
+
 
 }
