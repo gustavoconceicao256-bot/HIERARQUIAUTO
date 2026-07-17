@@ -17,11 +17,12 @@ export async function enviarHierarquia(client) {
     { nome: "Tático", id: "1460499779602878548" },
     { nome: "Recrutador", id: "1461194746235195525" },
     { nome: "Vendas", id: "1523014992927133759" },
-    { nome: "MEMBRO ✨", id: "1521938900418035842" },
+    { nome: "Membro", id: "1521938900418035842" },
     { nome: "Olheiro", id: "1522085772826775713" }
   ];
 
 
+  // limpa mensagens antigas do bot
   const mensagens = await canal.messages.fetch({ limit: 100 });
 
   const antigas = mensagens.filter(
@@ -33,29 +34,47 @@ export async function enviarHierarquia(client) {
   }
 
 
-  for (const cargo of cargos) {
+  // guarda usuários que já apareceram em cargo mais alto
+  const usuariosUsados = new Set();
+
+
+  // percorre do cargo mais alto para o mais baixo
+  for (const cargo of [...cargos].reverse()) {
 
     const role = canal.guild.roles.cache.get(cargo.id);
 
     if (!role) continue;
 
 
-    const membros = role.members.map(member => {
+    const membros = role.members.filter(member => {
+      
+      if (usuariosUsados.has(member.id)) {
+        return false;
+      }
+
+      usuariosUsados.add(member.id);
+      return true;
+
+    });
+
+
+    const lista = membros.map(member => {
       return `• ${member} | ${member.displayName}`;
     });
 
 
     const embed = new EmbedBuilder()
-      .setTitle(`${role} - [${membros.length}] membros`)
+      .setTitle(`${role} - [${lista.length}] membros`)
       .setDescription(
-        membros.length > 0
-          ? membros.join("\n")
+        lista.length > 0
+          ? lista.join("\n")
           : "Sem membros"
       )
       .setColor("#2b2d31")
       .setFooter({
-        text: `♻️ Atualizado Automaticamente | Última Atualização: ${new Date().toLocaleString("pt-BR")}`
-      });
+        text: "♻️ Atualizado Automaticamente"
+      })
+      .setTimestamp();
 
 
     await canal.send({
@@ -65,5 +84,6 @@ export async function enviarHierarquia(client) {
   }
 
 
-  console.log("♻️ Hierarquia atualizada!");
+  console.log("♻️ Hierarquia atualizada por cargo!");
+
 }
