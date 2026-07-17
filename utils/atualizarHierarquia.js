@@ -57,6 +57,7 @@ export async function atualizarHierarquia(client) {
   const listaCargos = {};
 
 
+
   config.cargos.forEach(cargo => {
 
     listaCargos[cargo.id] = [];
@@ -67,10 +68,14 @@ export async function atualizarHierarquia(client) {
 
 
 
+
+  // deixa somente o cargo mais alto
+
   membros.forEach(member => {
 
 
     let maior = -1;
+
     let cargoEscolhido = null;
 
 
@@ -90,8 +95,11 @@ export async function atualizarHierarquia(client) {
 
         if (role.position > maior) {
 
+
           maior = role.position;
+
           cargoEscolhido = cargo;
+
 
         }
 
@@ -104,33 +112,15 @@ export async function atualizarHierarquia(client) {
 
     if (cargoEscolhido) {
 
+
       listaCargos[cargoEscolhido.id].push(member);
+
 
     }
 
 
   });
 
-
-
-
-
-
-  const mensagensAtuais = await canal.messages.fetch({
-    limit: 100
-  });
-
-
-
-  const mensagensBot = mensagensAtuais.filter(
-    msg => msg.author.id === client.user.id
-  );
-
-
-
-
-
-  let indice = 0;
 
 
 
@@ -143,11 +133,14 @@ export async function atualizarHierarquia(client) {
     const role = canal.guild.roles.cache.get(cargo.id);
 
 
+
     if (!role) continue;
 
 
 
+
     const membrosCargo = listaCargos[cargo.id];
+
 
 
 
@@ -156,6 +149,7 @@ export async function atualizarHierarquia(client) {
       ? membrosCargo.map(member => `• ${member}`).join("\n")
 
       : "Sem membros";
+
 
 
 
@@ -175,6 +169,7 @@ export async function atualizarHierarquia(client) {
 
 
 
+
     const embed = new EmbedBuilder()
 
       .setDescription(lista)
@@ -187,6 +182,7 @@ export async function atualizarHierarquia(client) {
         `♻️ Atualizado Automaticamente 24h | Última Atualização: ${horario}`
 
       });
+
 
 
 
@@ -216,41 +212,56 @@ export async function atualizarHierarquia(client) {
 
 
 
-    const mensagemExistente = mensagensBot.at(indice);
+    // EDITA A MENSAGEM DESSE CARGO
+
+    if (mensagensSalvas[cargo.id]) {
+
+
+      try {
+
+
+        const mensagem = await canal.messages.fetch(
+          mensagensSalvas[cargo.id]
+        );
+
+
+        await mensagem.edit(dadosMensagem);
 
 
 
-
-
-    if (mensagemExistente) {
-
-
-      await mensagemExistente.edit(dadosMensagem);
-
-
-      mensagensSalvas[cargo.id] = mensagemExistente.id;
+        continue;
 
 
 
-    } else {
+      } catch {
 
 
+        delete mensagensSalvas[cargo.id];
 
-      const novaMensagem = await canal.send(dadosMensagem);
 
-
-      mensagensSalvas[cargo.id] = novaMensagem.id;
-
+      }
 
 
     }
 
 
 
-    indice++;
+
+
+
+
+    // CRIA SOMENTE SE NÃO EXISTIR
+
+    const novaMensagem = await canal.send(dadosMensagem);
+
+
+
+    mensagensSalvas[cargo.id] = novaMensagem.id;
+
 
 
   }
+
 
 
 
