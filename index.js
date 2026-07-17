@@ -126,8 +126,6 @@ async function atualizarHierarquia() {
 
 
 
-// LIMPA TODAS AS MENSAGENS DO CANAL
-
 async function limparCanalHierarquia() {
 
 
@@ -135,7 +133,7 @@ async function limparCanalHierarquia() {
 
 
     const canal = await client.channels.fetch(
-      "ID_DO_CANAL_DA_HIERARQUIA"
+      "1527420188503576629"
     );
 
 
@@ -171,7 +169,7 @@ async function limparCanalHierarquia() {
 
 
           console.log(
-            "⚠️ Não consegui apagar mensagem:",
+            "⚠️ Não consegui apagar:",
             mensagem.id
           );
 
@@ -194,7 +192,10 @@ async function limparCanalHierarquia() {
   } catch (erro) {
 
 
-    console.log("❌ Erro ao limpar canal:", erro);
+    console.log(
+      "❌ Erro ao limpar canal:",
+      erro
+    );
 
 
 
@@ -216,6 +217,7 @@ client.once("ready", async () => {
 
 
   console.log(`✅ ${client.user.tag} está online!`);
+
 
 
 
@@ -241,21 +243,22 @@ client.once("ready", async () => {
 
 
 
-
-
-// CONTROLE DE ALTERAÇÃO RÁPIDA DE CARGOS
-
 let timerHierarquia = null;
 
 let ultimaMudanca = null;
 
 
 
-client.on("guildMemberUpdate", (oldMember, newMember) => {
+client.on("guildMemberUpdate", async (oldMember, newMember) => {
 
 
 
   console.log("🔄 Mudança de cargo detectada!");
+
+
+
+  // força pegar os cargos atuais
+  await newMember.fetch();
 
 
 
@@ -271,12 +274,9 @@ client.on("guildMemberUpdate", (oldMember, newMember) => {
 
   if (timerHierarquia) {
 
-
     clearTimeout(timerHierarquia);
 
-
   }
-
 
 
 
