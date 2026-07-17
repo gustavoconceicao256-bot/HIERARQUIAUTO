@@ -5,7 +5,6 @@ import express from "express";
 import "./utils/keepalive/keepalive.js";
 
 import readyEvent from "./events/ready.js";
-import guildMemberUpdateEvent from "./events/guildMemberUpdate.js";
 import { atualizarHierarquia as executarHierarquia } from "./utils/atualizarHierarquia.js";
 
 dotenv.config();
@@ -39,7 +38,6 @@ app.listen(PORT, () => {
 
 
 
-
 const client = new Client({
 
   intents: [
@@ -64,8 +62,6 @@ console.log("TOKEN EXISTE?", !!process.env.TOKEN);
 
 
 
-
-
 let atualizando = false;
 
 
@@ -75,7 +71,7 @@ async function atualizarHierarquia() {
 
   if (atualizando) {
 
-    console.log("⏳ Atualização já está acontecendo.");
+    console.log("⏳ Atualização já em andamento.");
 
     return;
 
@@ -105,8 +101,10 @@ async function atualizarHierarquia() {
   } catch (erro) {
 
 
-    console.log("❌ Erro na hierarquia:", erro);
-
+    console.log(
+      "❌ Erro na hierarquia:",
+      erro
+    );
 
 
   }
@@ -138,7 +136,7 @@ async function limparCanalHierarquia() {
 
 
 
-    console.log("🧹 Limpando canal da hierarquia...");
+    console.log("🧹 Limpando canal...");
 
 
 
@@ -155,27 +153,17 @@ async function limparCanalHierarquia() {
 
 
 
-      for (const mensagem of mensagens.values()) {
+      for (const msg of mensagens.values()) {
 
 
         try {
 
 
-          await mensagem.delete();
+          await msg.delete();
 
 
 
-        } catch (erro) {
-
-
-          console.log(
-            "⚠️ Não consegui apagar:",
-            mensagem.id
-          );
-
-
-        }
-
+        } catch {}
 
       }
 
@@ -185,7 +173,7 @@ async function limparCanalHierarquia() {
 
 
 
-    console.log("✅ Canal limpo com sucesso!");
+    console.log("✅ Canal limpo!");
 
 
 
@@ -193,10 +181,9 @@ async function limparCanalHierarquia() {
 
 
     console.log(
-      "❌ Erro ao limpar canal:",
+      "❌ Erro limpando canal:",
       erro
     );
-
 
 
   }
@@ -215,9 +202,9 @@ async function limparCanalHierarquia() {
 client.once("ready", async () => {
 
 
-
-  console.log(`✅ ${client.user.tag} está online!`);
-
+  console.log(
+    `✅ ${client.user.tag} está online!`
+  );
 
 
 
@@ -233,6 +220,24 @@ client.once("ready", async () => {
 
 
 
+  // VERIFICAÇÃO AUTOMÁTICA
+
+  setInterval(async () => {
+
+
+    console.log(
+      "🔍 Checagem automática..."
+    );
+
+
+    await atualizarHierarquia();
+
+
+
+  }, 10000);
+
+
+
 });
 
 
@@ -243,32 +248,21 @@ client.once("ready", async () => {
 
 
 
+// CONTROLE DE MUDANÇA DE CARGO
+
 let timerHierarquia = null;
 
-let ultimaMudanca = null;
+
+
+client.on(
+"guildMemberUpdate",
+(oldMember, newMember) => {
 
 
 
-client.on("guildMemberUpdate", async (oldMember, newMember) => {
-
-
-
-  console.log("🔄 Mudança de cargo detectada!");
-
-
-
-  // força pegar os cargos atuais
-  await newMember.fetch();
-
-
-
-  ultimaMudanca = {
-
-    oldMember,
-
-    newMember
-
-  };
+  console.log(
+    "🔄 Mudança de cargo detectada!"
+  );
 
 
 
@@ -282,30 +276,20 @@ client.on("guildMemberUpdate", async (oldMember, newMember) => {
 
 
 
-
   timerHierarquia = setTimeout(async () => {
-
-
-
-    if (!ultimaMudanca) return;
 
 
 
     try {
 
 
-
-      console.log("⏳ Aplicando somente última alteração...");
-
-
-
-      await guildMemberUpdateEvent.execute(
-
-        ultimaMudanca.oldMember,
-
-        ultimaMudanca.newMember
-
+      console.log(
+        "⏳ Aplicando resultado final..."
       );
+
+
+
+      await newMember.fetch();
 
 
 
@@ -313,23 +297,19 @@ client.on("guildMemberUpdate", async (oldMember, newMember) => {
 
 
 
-      console.log("✅ Resultado final atualizado!");
-
-
-
-      ultimaMudanca = null;
+      console.log(
+        "✅ Atualização concluída!"
+      );
 
 
 
     } catch (erro) {
 
 
-
       console.log(
-        "❌ Erro no resultado final:",
+        "❌ Erro atualização cargo:",
         erro
       );
-
 
 
     }
