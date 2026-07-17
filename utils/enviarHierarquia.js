@@ -167,12 +167,6 @@ export async function enviarHierarquia(client) {
 
     mensagensSalvas[cargo.id] = msg.id;
 
-    salvarMensagens(mensagensSalvas);
+console.log("💾 Salvando mensagem:", cargo.nome, msg.id);
 
-
-  }
-
-
-  console.log("♻️ Hierarquia sincronizada!");
-
-}
+salvarMensagens(mensagensSalvas);
