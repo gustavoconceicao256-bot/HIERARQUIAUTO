@@ -1,11 +1,15 @@
 import https from "https";
 
-const URL = "https://hierarquiauto.onrender.com";
+const URL = "https://hierarquiauto.onrender.com/";
 
-setInterval(() => {
-  https.get(URL, () => {
-    console.log("🔋 KeepAlive funcionando!");
+function acordarBot() {
+  https.get(URL, (res) => {
+    console.log(`🔋 KeepAlive: ${res.statusCode}`);
+  }).on("error", (err) => {
+    console.log("❌ KeepAlive erro:", err.message);
   });
-}, 5 * 60 * 1000);
+}
 
 console.log("🟢 KeepAlive iniciado!");
+
+setInterval(acordarBot, 60 * 1000);
