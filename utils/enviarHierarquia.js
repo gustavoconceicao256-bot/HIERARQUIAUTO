@@ -22,14 +22,11 @@ export async function enviarHierarquia(client) {
   ];
 
 
-  // Apaga a hierarquia antiga do bot
+  // Apaga mensagens antigas da hierarquia
   const mensagens = await canal.messages.fetch({ limit: 100 });
 
   const antigas = mensagens.filter(
-    msg =>
-      msg.author.id === client.user.id &&
-      msg.embeds.length > 0 &&
-      msg.embeds[0].title === "📋 HIERARQUIA"
+    msg => msg.author.id === client.user.id
   );
 
   for (const msg of antigas.values()) {
@@ -51,7 +48,6 @@ export async function enviarHierarquia(client) {
 
 
     const embed = new EmbedBuilder()
-      .setTitle("📋 HIERARQUIA")
       .setDescription(
         membros.length > 0
           ? membros.join("\n")
