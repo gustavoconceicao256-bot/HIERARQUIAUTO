@@ -45,7 +45,7 @@ export async function enviarHierarquia(client) {
 
 
 
-  // deixa somente o cargo mais alto
+  // Deixa somente o cargo mais alto
   membros.forEach(member => {
 
     let maior = -1;
@@ -112,52 +112,63 @@ export async function enviarHierarquia(client) {
 
 
 
-    // se já existe, edita
+    // EDITA A MENSAGEM EXISTENTE
     if (mensagensSalvas[cargo.id]) {
 
+      try {
 
-      const msg = await canal.messages.fetch(
-        mensagensSalvas[cargo.id]
-      );
-
-
-      await msg.edit({
-
-        content: `# ${role} - [${membrosCargo.length}] membros`,
-
-        allowedMentions:{
-          roles:[role.id]
-        },
-
-        embeds:[embed]
-
-      });
+        const msg = await canal.messages.fetch(
+          mensagensSalvas[cargo.id]
+        );
 
 
+        await msg.edit({
 
-    } else {
+          content: `# ${role} - [${membrosCargo.length}] membros`,
 
+          allowedMentions:{
+            roles:[role.id]
+          },
 
-      // primeira criação
+          embeds:[embed]
 
-      const msg = await canal.send({
-
-        content:`# ${role} - [${membrosCargo.length}] membros`,
-
-        allowedMentions:{
-          roles:[role.id]
-        },
-
-        embeds:[embed]
-
-      });
+        });
 
 
-      mensagensSalvas[cargo.id] = msg.id;
+        continue;
 
-      salvarMensagens(mensagensSalvas);
+
+      } catch {
+
+        // se a mensagem não existir mais, remove o ID salvo
+        delete mensagensSalvas[cargo.id];
+
+        salvarMensagens(mensagensSalvas);
+
+      }
 
     }
+
+
+
+    // CRIA SOMENTE SE NÃO EXISTIR
+    const msg = await canal.send({
+
+      content:`# ${role} - [${membrosCargo.length}] membros`,
+
+      allowedMentions:{
+        roles:[role.id]
+      },
+
+      embeds:[embed]
+
+    });
+
+
+    mensagensSalvas[cargo.id] = msg.id;
+
+    salvarMensagens(mensagensSalvas);
+
 
   }
 
