@@ -1,37 +1,10 @@
 import { EmbedBuilder } from "discord.js";
-import fs from "fs";
 import config from "../config.js";
-
-const arquivoMensagens = "./utils/mensagensHierarquia.json";
-
-
-function salvarMensagens(dados) {
-  fs.writeFileSync(
-    arquivoMensagens,
-    JSON.stringify(dados, null, 2)
-  );
-}
-
-
-function pegarMensagens() {
-
-  if (!fs.existsSync(arquivoMensagens)) {
-    return {};
-  }
-
-  return JSON.parse(
-    fs.readFileSync(arquivoMensagens)
-  );
-
-}
-
 
 
 export async function enviarHierarquia(client) {
 
   const canal = await client.channels.fetch(config.canalId);
-
-  const mensagensSalvas = pegarMensagens();
 
 
   const membros = await canal.guild.members.fetch();
@@ -45,7 +18,7 @@ export async function enviarHierarquia(client) {
 
 
 
-  // Deixa somente o cargo mais alto
+  // Deixa o membro somente no cargo mais alto
   membros.forEach(member => {
 
     let maior = -1;
@@ -81,6 +54,11 @@ export async function enviarHierarquia(client) {
 
 
 
+  // Busca mensagens antigas do bot
+  const mensagens = await canal.messages.fetch({ limit: 100 });
+
+
+
   for (const cargo of config.cargos) {
 
 
@@ -94,7 +72,9 @@ export async function enviarHierarquia(client) {
 
 
     const lista = membrosCargo.length > 0
+
       ? membrosCargo.map(member => `• ${member}`).join("\n")
+
       : "Sem membros";
 
 
@@ -106,67 +86,68 @@ export async function enviarHierarquia(client) {
       .setColor(role.color || "#2b2d31")
 
       .setFooter({
+
         text:
         `♻️ Atualizado Automaticamente | Última Atualização: ${new Date().toLocaleString("pt-BR")}`
+
       });
 
 
 
-    // EDITA A MENSAGEM EXISTENTE
-    if (mensagensSalvas[cargo.id]) {
+    // procura a mensagem desse cargo
+    const mensagemExistente = mensagens.find(msg =>
 
-      try {
+      msg.author.id === client.user.id &&
 
-        const msg = await canal.messages.fetch(
-          mensagensSalvas[cargo.id]
-        );
+      msg.content.includes(role.id)
 
-
-        await msg.edit({
-
-          content: `# ${role} - [${membrosCargo.length}] membros`,
-
-          allowedMentions:{
-            roles:[role.id]
-          },
-
-          embeds:[embed]
-
-        });
+    );
 
 
-        continue;
+
+    if (mensagemExistente) {
 
 
-      } catch {
+      await mensagemExistente.edit({
 
-        // se a mensagem não existir mais, remove o ID salvo
-        delete mensagensSalvas[cargo.id];
+        content: `# ${role} - [${membrosCargo.length}] membros`,
 
-        salvarMensagens(mensagensSalvas);
+        allowedMentions: {
 
-      }
+          roles: [role.id]
+
+        },
+
+        embeds: [embed]
+
+      });
+
+
+
+    } else {
+
+
+      await canal.send({
+
+        content: `# ${role} - [${membrosCargo.length}] membros`,
+
+        allowedMentions: {
+
+          roles: [role.id]
+
+        },
+
+        embeds: [embed]
+
+      });
+
 
     }
 
 
-
-    // CRIA SOMENTE SE NÃO EXISTIR
-    const msg = await canal.send({
-
-      content:`# ${role} - [${membrosCargo.length}] membros`,
-
-      allowedMentions:{
-        roles:[role.id]
-      },
-
-      embeds:[embed]
-
-    });
+  }
 
 
-    mensagensSalvas[cargo.id] = msg.id;
+  console.log("♻️ Hierarquia sincronizada!");
 
-console.log("💾 Salvando mensagem:", cargo.nome, msg.id);
-
-salvarMensagens(mensagensSalvas);
+}
