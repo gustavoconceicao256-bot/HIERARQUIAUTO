@@ -23,7 +23,6 @@ export async function enviarHierarquia(client) {
   ];
 
 
-  // apagar mensagens antigas do bot
   const mensagens = await canal.messages.fetch({ limit: 100 });
 
   for (const msg of mensagens.values()) {
@@ -33,11 +32,9 @@ export async function enviarHierarquia(client) {
   }
 
 
-  // buscar membros do servidor
   const membros = await canal.guild.members.fetch();
 
 
-  // criar lista vazia para os cargos
   const listaCargos = {};
 
   cargos.forEach(cargo => {
@@ -46,7 +43,6 @@ export async function enviarHierarquia(client) {
 
 
 
-  // escolher somente o cargo mais alto REAL do Discord
   membros.forEach(member => {
 
     let cargoEscolhido = null;
@@ -63,10 +59,8 @@ export async function enviarHierarquia(client) {
       if (member.roles.cache.has(cargo.id)) {
 
         if (role.position > maiorPosicao) {
-
           maiorPosicao = role.position;
           cargoEscolhido = cargo;
-
         }
 
       }
@@ -86,7 +80,6 @@ export async function enviarHierarquia(client) {
 
 
 
-  // enviar cada cargo separado
   for (const cargo of cargos) {
 
     const role = canal.guild.roles.cache.get(cargo.id);
@@ -98,7 +91,6 @@ export async function enviarHierarquia(client) {
 
 
     const embed = new EmbedBuilder()
-      .setTitle("📋 HIERARQUIA")
       .setDescription(
         membrosCargo.length > 0
           ? membrosCargo.join("\n")
