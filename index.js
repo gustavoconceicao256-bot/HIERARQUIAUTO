@@ -6,7 +6,7 @@ import "./utils/keepalive/keepalive.js";
 
 import readyEvent from "./events/ready.js";
 import guildMemberUpdateEvent from "./events/guildMemberUpdate.js";
-import { enviarHierarquia } from "./utils/enviarHierarquia.js";
+import { atualizarHierarquia as executarHierarquia } from "./utils/atualizarHierarquia.js";
 
 dotenv.config();
 
@@ -33,6 +33,7 @@ const client = new Client({
   intents: [
 
     GatewayIntentBits.Guilds,
+
     GatewayIntentBits.GuildMembers
 
   ]
@@ -61,7 +62,7 @@ async function atualizarHierarquia() {
 
     console.log("♻️ Atualizando hierarquia...");
 
-    await enviarHierarquia(client);
+    await executarHierarquia(client);
 
     console.log("✅ Hierarquia atualizada!");
 
@@ -85,13 +86,16 @@ async function atualizarHierarquia() {
 
 client.once("ready", async () => {
 
+
   console.log(`✅ ${client.user.tag} está online!`);
 
 
   readyEvent.execute(client);
 
 
+
   await atualizarHierarquia();
+
 
 });
 
@@ -101,7 +105,9 @@ client.once("ready", async () => {
 
 client.on("guildMemberUpdate", async (oldMember, newMember) => {
 
+
   console.log("🔄 Mudança de cargo detectada!");
+
 
 
   await guildMemberUpdateEvent.execute(
@@ -110,7 +116,9 @@ client.on("guildMemberUpdate", async (oldMember, newMember) => {
   );
 
 
+
   await atualizarHierarquia();
+
 
 });
 
