@@ -22,59 +22,96 @@ export async function enviarHierarquia(client) {
   ];
 
 
-  // limpa mensagens antigas do bot
+  // Apaga hierarquia antiga
   const mensagens = await canal.messages.fetch({ limit: 100 });
 
-  const antigas = mensagens.filter(
-    msg => msg.author.id === client.user.id
-  );
-
-  for (const msg of antigas.values()) {
-    await msg.delete();
+  for (const msg of mensagens.values()) {
+    if (msg.author.id === client.user.id) {
+      await msg.delete();
+    }
   }
 
 
-  // guarda usuários que já apareceram em cargo mais alto
-  const usuariosUsados = new Set();
+  const membros = await canal.guild.members.fetch();
+
+  const listaCargos = {};
+
+  cargos.forEach(cargo => {
+    listaCargos[cargo.id] = [];
+  });
 
 
-  // percorre do cargo mais alto para o mais baixo
-  for (const cargo of [...cargos].reverse()) {
+
+  // Coloca o membro somente no cargo mais alto
+  membros.forEach(member => {
+
+    let cargoMaisAlto = null;
+    let maiorPosicao = -1;
+
+
+    cargos.forEach(cargo => {
+
+      const role = canal.guild.roles.cache.get(cargo.id);
+
+      if (!role) return;
+
+
+      if (member.roles.cache.has(cargo.id)) {
+
+        if (role.position > maiorPosicao) {
+
+          maiorPosicao = role.position;
+          cargoMaisAlto = cargo;
+
+        }
+
+      }
+
+    });
+
+
+    if (cargoMaisAlto) {
+      listaCargos[cargoMaisAlto.id].push(member);
+    }
+
+  });
+
+
+
+  // Cria um embed para cada cargo
+  for (const cargo of cargos) {
 
     const role = canal.guild.roles.cache.get(cargo.id);
 
     if (!role) continue;
 
 
-    const membros = role.members.filter(member => {
-      
-      if (usuariosUsados.has(member.id)) {
-        return false;
-      }
-
-      usuariosUsados.add(member.id);
-      return true;
-
-    });
+    const membrosCargo = listaCargos[cargo.id];
 
 
-    const lista = membros.map(member => {
-      return `• ${member} | ${member.displayName}`;
-    });
+    if (membrosCargo.length === 0) continue;
+
+
+    const lista = membrosCargo
+      .map(member => `• ${member}`)
+      .join("\n");
+
 
 
     const embed = new EmbedBuilder()
-      .setTitle(`${role} - [${lista.length}] membros`)
+
+      .setTitle(`${role.name} - [${membrosCargo.length}] membros`)
+
       .setDescription(
-        lista.length > 0
-          ? lista.join("\n")
-          : "Sem membros"
+        `${role}\n\n${lista}`
       )
+
       .setColor("#2b2d31")
+
       .setFooter({
-        text: "♻️ Atualizado Automaticamente"
-      })
-      .setTimestamp();
+        text: `♻️ Atualizado Automaticamente | Última Atualização: ${new Date().toLocaleString("pt-BR")}`
+      });
+
 
 
     await canal.send({
@@ -84,6 +121,5 @@ export async function enviarHierarquia(client) {
   }
 
 
-  console.log("♻️ Hierarquia atualizada por cargo!");
-
+  console.log("♻️ Hierarquia atualizada!");
 }
