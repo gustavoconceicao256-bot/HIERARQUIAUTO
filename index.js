@@ -55,7 +55,9 @@ const client = new Client({
 
 
 
+
 console.log("TOKEN EXISTE?", !!process.env.TOKEN);
+
 
 
 
@@ -123,7 +125,7 @@ client.once("ready", async () => {
 
 
 
-  readyEvent.execute(client);
+  await readyEvent.execute(client);
 
 
 
@@ -142,10 +144,10 @@ client.once("ready", async () => {
 
 
 
-// Aguarda as alterações de cargo terminarem
+// espera terminar todas as mudanças de cargo
 // e atualiza somente o resultado final
 
-let timerHierarquia;
+let timerHierarquia = null;
 
 
 
@@ -157,21 +159,14 @@ client.on("guildMemberUpdate", async (oldMember, newMember) => {
 
 
 
-
   await guildMemberUpdateEvent.execute(
-
     oldMember,
-
     newMember
-
   );
 
 
 
-
-
   clearTimeout(timerHierarquia);
-
 
 
 
@@ -188,10 +183,7 @@ client.on("guildMemberUpdate", async (oldMember, newMember) => {
 
 
 
-
   }, 3000);
-
-
 
 
 
