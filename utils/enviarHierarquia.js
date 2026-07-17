@@ -13,7 +13,9 @@ export async function enviarHierarquia(client) {
     .setTimestamp();
 
   const cargos = [
-    // deixa aqui os mesmos cargos que você já colocou
+    // COLOQUE SEUS CARGOS AQUI
+    // Exemplo:
+    // { id: "ID_DO_CARGO", nome: "NOME DO CARGO" }
   ];
 
   for (const cargo of cargos) {
@@ -28,15 +30,38 @@ export async function enviarHierarquia(client) {
 
     embed.addFields({
       name: `${role.name} - [${membros.length}] membros`,
-      value: membros.length > 0 
+      value: membros.length > 0
         ? membros.join("\n")
         : "Sem membros"
     });
   }
 
-  await canal.send({
-    embeds: [embed]
-  });
 
-  console.log("✅ Hierarquia enviada!");
+  // procura a mensagem antiga do bot
+  const mensagens = await canal.messages.fetch({ limit: 20 });
+
+  const antiga = mensagens.find(
+    msg => msg.author.id === client.user.id &&
+    msg.embeds.length > 0 &&
+    msg.embeds[0].title === "📋 HIERARQUIA DA ORGANIZAÇÃO"
+  );
+
+
+  if (antiga) {
+
+    await antiga.edit({
+      embeds: [embed]
+    });
+
+    console.log("♻️ Hierarquia atualizada!");
+
+  } else {
+
+    await canal.send({
+      embeds: [embed]
+    });
+
+    console.log("✅ Hierarquia criada!");
+
+  }
 }
