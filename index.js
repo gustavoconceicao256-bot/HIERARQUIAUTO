@@ -40,6 +40,7 @@ app.listen(PORT, () => {
 
 
 
+
 const client = new Client({
 
   intents: [
@@ -56,8 +57,8 @@ const client = new Client({
 
 
 
-console.log("TOKEN EXISTE?", !!process.env.TOKEN);
 
+console.log("TOKEN EXISTE?", !!process.env.TOKEN);
 
 
 
@@ -123,6 +124,72 @@ async function atualizarHierarquia() {
 
 
 
+// LIMPA O CANAL ANTES DE CRIAR A HIERARQUIA NOVA
+
+async function limparCanalHierarquia() {
+
+
+  try {
+
+
+    const canal = await client.channels.fetch(
+      "CANAL_ID_AQUI"
+    );
+
+
+
+    let mensagens = await canal.messages.fetch({
+      limit: 100
+    });
+
+
+
+    while (mensagens.size > 0) {
+
+
+      await canal.bulkDelete(mensagens, true);
+
+
+
+      if (mensagens.size < 100) {
+
+        break;
+
+      }
+
+
+
+      mensagens = await canal.messages.fetch({
+        limit: 100
+      });
+
+
+    }
+
+
+
+    console.log("🧹 Canal da hierarquia limpo!");
+
+
+
+  } catch (erro) {
+
+
+    console.log("❌ Erro ao limpar canal:", erro);
+
+
+
+  }
+
+
+}
+
+
+
+
+
+
+
 
 
 client.once("ready", async () => {
@@ -133,7 +200,12 @@ client.once("ready", async () => {
 
 
 
+
   await readyEvent.execute(client);
+
+
+
+  await limparCanalHierarquia();
 
 
 
@@ -142,6 +214,9 @@ client.once("ready", async () => {
 
 
 });
+
+
+
 
 
 
@@ -167,15 +242,16 @@ client.on("guildMemberUpdate", (oldMember, newMember) => {
 
 
 
-  // guarda a última alteração
   ultimaMudanca = {
+
     oldMember,
+
     newMember
+
   };
 
 
 
-  // cancela qualquer atualização pendente
   if (timerHierarquia) {
 
     clearTimeout(timerHierarquia);
@@ -186,7 +262,6 @@ client.on("guildMemberUpdate", (oldMember, newMember) => {
 
 
 
-  // espera 5 segundos sem nenhuma mudança
 
   timerHierarquia = setTimeout(async () => {
 
