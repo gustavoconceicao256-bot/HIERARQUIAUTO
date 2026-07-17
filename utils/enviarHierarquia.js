@@ -4,6 +4,10 @@ export async function enviarHierarquia(client) {
 
   const canal = await client.channels.fetch("1527420188503576629");
 
+  // Carrega todos os membros do servidor
+  await canal.guild.members.fetch();
+
+
   const cargos = [
     { nome: "00", id: "1521984073969569883" },
     { nome: "01", id: "1522086542716305548" },
@@ -22,7 +26,7 @@ export async function enviarHierarquia(client) {
   ];
 
 
-  // Apaga mensagens antigas da hierarquia
+  // Apaga mensagens antigas do bot
   const mensagens = await canal.messages.fetch({ limit: 100 });
 
   const antigas = mensagens.filter(
@@ -45,6 +49,12 @@ export async function enviarHierarquia(client) {
     const membros = role.members.map(member => {
       return `• ${member} | ${member.displayName}`;
     });
+
+
+    console.log(
+      `Cargo ${cargo.nome}:`,
+      role.members.map(m => m.id)
+    );
 
 
     const embed = new EmbedBuilder()
