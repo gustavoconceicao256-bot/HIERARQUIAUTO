@@ -23,15 +23,6 @@ export async function enviarHierarquia(client) {
   ];
 
 
-  const mensagens = await canal.messages.fetch({ limit: 100 });
-
-  for (const msg of mensagens.values()) {
-    if (msg.author.id === client.user.id) {
-      await msg.delete();
-    }
-  }
-
-
   const membros = await canal.guild.members.fetch();
 
 
@@ -43,6 +34,7 @@ export async function enviarHierarquia(client) {
 
 
 
+  // coloca cada pessoa somente no cargo mais alto
   membros.forEach(member => {
 
     let cargoEscolhido = null;
@@ -69,14 +61,16 @@ export async function enviarHierarquia(client) {
 
 
     if (cargoEscolhido) {
-
-      listaCargos[cargoEscolhido.id].push(
-        `• ${member}`
-      );
-
+      listaCargos[cargoEscolhido.id].push(member);
     }
 
   });
+
+
+
+  const embed = new EmbedBuilder()
+    .setColor("#2b2d31")
+    .setTimestamp();
 
 
 
@@ -90,21 +84,51 @@ export async function enviarHierarquia(client) {
     const membrosCargo = listaCargos[cargo.id];
 
 
-    const embed = new EmbedBuilder()
-      .setDescription(
-        membrosCargo.length > 0
-          ? membrosCargo.join("\n")
-          : "Sem membros"
-      )
-      .setColor("#2b2d31")
-      .setFooter({
-        text: `Total: ${membrosCargo.length} membro(s)`
-      })
-      .setTimestamp();
+    if (membrosCargo.length === 0) continue;
 
+
+    const lista = membrosCargo.map(member => {
+      return `• ${member}`;
+    }).join("\n");
+
+
+
+    embed.addFields({
+      name: `${role.name} - [${membrosCargo.length}] membros`,
+      value:
+        `${role}\n` +
+        `${lista}`
+    });
+
+  }
+
+
+
+  embed.setFooter({
+    text: "Atualizado Automaticamente"
+  });
+
+
+
+  const mensagens = await canal.messages.fetch({ limit: 20 });
+
+
+  const antiga = mensagens.find(
+    msg =>
+      msg.author.id === client.user.id &&
+      msg.embeds.length > 0
+  );
+
+
+  if (antiga) {
+
+    await antiga.edit({
+      embeds: [embed]
+    });
+
+  } else {
 
     await canal.send({
-      content: `${role}`,
       embeds: [embed]
     });
 
