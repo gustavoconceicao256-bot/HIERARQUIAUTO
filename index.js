@@ -6,7 +6,7 @@ import "./utils/keepalive/keepalive.js";
 
 import readyEvent from "./events/ready.js";
 import guildMemberUpdateEvent from "./events/guildMemberUpdate.js";
-import { enviarHierarquia } from "./utils/enviarHierarquia.js";
+import { atualizarHierarquia as executarHierarquia } from "./utils/atualizarHierarquia.js";
 
 dotenv.config();
 
@@ -46,7 +46,6 @@ console.log("TOKEN EXISTE?", !!process.env.TOKEN);
 
 
 
-// evita várias atualizações ao mesmo tempo
 let atualizando = false;
 
 
@@ -63,11 +62,11 @@ async function atualizarHierarquia() {
 
     console.log("♻️ Atualizando hierarquia...");
 
-    await enviarHierarquia(client);
+    await executarHierarquia(client);
 
     console.log("✅ Hierarquia atualizada!");
 
-  } 
+  }
 
 
   catch (erro) {
@@ -91,15 +90,11 @@ client.once("ready", async () => {
   console.log(`✅ ${client.user.tag} está online!`);
 
 
-
   readyEvent.execute(client);
 
 
 
-  // cria ou atualiza a hierarquia ao ligar
-
   await atualizarHierarquia();
-
 
 
 });
@@ -123,10 +118,7 @@ client.on("guildMemberUpdate", async (oldMember, newMember) => {
 
 
 
-  // atualiza os embeds existentes
-
   await atualizarHierarquia();
-
 
 
 });
