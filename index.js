@@ -2,7 +2,7 @@ import { Client, GatewayIntentBits } from "discord.js";
 import dotenv from "dotenv";
 import express from "express";
 
-import "./utils/keepalive.js";
+import "./utils/Keepalive/keepalive.js";
 
 import readyEvent from "./events/ready.js";
 import guildMemberUpdateEvent from "./events/guildMemberUpdate.js";
@@ -30,10 +30,8 @@ const client = new Client({
   ]
 });
 
-// Teste para saber se o Render está lendo o TOKEN
 console.log("TOKEN EXISTE?", !!process.env.TOKEN);
 
-// Bot online
 client.once("ready", async () => {
   console.log(`✅ ${client.user.tag} está online!`);
 
@@ -42,7 +40,6 @@ client.once("ready", async () => {
   await enviarHierarquia(client);
 });
 
-// Atualização de cargos
 client.on("guildMemberUpdate", (oldMember, newMember) => {
   console.log("Evento de cargo detectado!");
 
