@@ -40,7 +40,6 @@ app.listen(PORT, () => {
 
 
 
-
 const client = new Client({
 
   intents: [
@@ -59,6 +58,8 @@ const client = new Client({
 
 
 console.log("TOKEN EXISTE?", !!process.env.TOKEN);
+
+
 
 
 
@@ -115,7 +116,6 @@ async function atualizarHierarquia() {
   atualizando = false;
 
 
-
 }
 
 
@@ -124,7 +124,9 @@ async function atualizarHierarquia() {
 
 
 
-// LIMPA O CANAL ANTES DE CRIAR A HIERARQUIA NOVA
+
+
+// LIMPA TODAS AS MENSAGENS DO CANAL
 
 async function limparCanalHierarquia() {
 
@@ -133,30 +135,20 @@ async function limparCanalHierarquia() {
 
 
     const canal = await client.channels.fetch(
-      "CANAL_ID_AQUI"
+      "ID_DO_CANAL_DA_HIERARQUIA"
     );
 
 
 
-    let mensagens = await canal.messages.fetch({
-      limit: 100
-    });
+    console.log("🧹 Limpando canal da hierarquia...");
 
 
 
-    while (mensagens.size > 0) {
-
-
-      await canal.bulkDelete(mensagens, true);
+    let mensagens;
 
 
 
-      if (mensagens.size < 100) {
-
-        break;
-
-      }
-
+    do {
 
 
       mensagens = await canal.messages.fetch({
@@ -164,11 +156,38 @@ async function limparCanalHierarquia() {
       });
 
 
-    }
+
+      for (const mensagem of mensagens.values()) {
+
+
+        try {
+
+
+          await mensagem.delete();
 
 
 
-    console.log("🧹 Canal da hierarquia limpo!");
+        } catch (erro) {
+
+
+          console.log(
+            "⚠️ Não consegui apagar mensagem:",
+            mensagem.id
+          );
+
+
+        }
+
+
+      }
+
+
+
+    } while (mensagens.size > 0);
+
+
+
+    console.log("✅ Canal limpo com sucesso!");
 
 
 
@@ -200,7 +219,6 @@ client.once("ready", async () => {
 
 
 
-
   await readyEvent.execute(client);
 
 
@@ -225,8 +243,7 @@ client.once("ready", async () => {
 
 
 
-
-// BLOQUEADOR DE AÇÕES RÁPIDAS
+// CONTROLE DE ALTERAÇÃO RÁPIDA DE CARGOS
 
 let timerHierarquia = null;
 
@@ -254,9 +271,12 @@ client.on("guildMemberUpdate", (oldMember, newMember) => {
 
   if (timerHierarquia) {
 
+
     clearTimeout(timerHierarquia);
 
+
   }
+
 
 
 
@@ -305,7 +325,10 @@ client.on("guildMemberUpdate", (oldMember, newMember) => {
 
 
 
-      console.log("❌ Erro no resultado final:", erro);
+      console.log(
+        "❌ Erro no resultado final:",
+        erro
+      );
 
 
 
