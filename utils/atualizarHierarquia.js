@@ -16,13 +16,10 @@ const arquivoMensagens = path.join(
 
 
 
-
 function lerMensagens() {
 
   if (!fs.existsSync(arquivoMensagens)) {
-
     return {};
-
   }
 
 
@@ -31,7 +28,6 @@ function lerMensagens() {
     return JSON.parse(
       fs.readFileSync(arquivoMensagens, "utf8")
     );
-
 
   } catch {
 
@@ -43,24 +39,14 @@ function lerMensagens() {
 
 
 
-
-
 function salvarMensagens(dados) {
 
-
   fs.writeFileSync(
-
     arquivoMensagens,
-
     JSON.stringify(dados, null, 2)
-
   );
 
-
 }
-
-
-
 
 
 
@@ -69,26 +55,26 @@ function salvarMensagens(dados) {
 export async function atualizarHierarquia(client) {
 
 
-
   const canal = await client.channels.fetch(config.canalId);
 
+
+  // força atualizar dados do Discord
+  await canal.guild.roles.fetch();
 
 
   const mensagensSalvas = lerMensagens();
 
 
 
-
-
-  const membros = await canal.guild.members.fetch();
-
+  // força pegar membros atualizados
+  const membros = await canal.guild.members.fetch({
+    force: true
+  });
 
 
 
 
   const listaCargos = {};
-
-
 
 
   config.cargos.forEach(cargo => {
@@ -102,12 +88,9 @@ export async function atualizarHierarquia(client) {
 
 
 
-
-
   // deixa somente o cargo mais alto
 
   membros.forEach(member => {
-
 
 
     let maior = -1;
@@ -116,26 +99,20 @@ export async function atualizarHierarquia(client) {
 
 
 
-
     config.cargos.forEach(cargo => {
 
 
-
       const role = canal.guild.roles.cache.get(cargo.id);
-
 
 
       if (!role) return;
 
 
 
-
       if (member.roles.cache.has(cargo.id)) {
 
 
-
         if (role.position > maior) {
-
 
 
           maior = role.position;
@@ -143,11 +120,9 @@ export async function atualizarHierarquia(client) {
           cargoEscolhido = cargo;
 
 
-
         }
 
       }
-
 
 
     });
@@ -155,22 +130,14 @@ export async function atualizarHierarquia(client) {
 
 
 
-
     if (cargoEscolhido) {
 
-
-
       listaCargos[cargoEscolhido.id].push(member);
-
-
 
     }
 
 
-
   });
-
-
 
 
 
@@ -182,9 +149,7 @@ export async function atualizarHierarquia(client) {
 
 
 
-
     const role = canal.guild.roles.cache.get(cargo.id);
-
 
 
 
@@ -211,22 +176,15 @@ export async function atualizarHierarquia(client) {
 
 
 
-
-
     const horario = new Date().toLocaleTimeString("pt-BR", {
-
 
       timeZone: "America/Sao_Paulo",
 
-
       hour: "2-digit",
-
 
       minute: "2-digit"
 
-
     });
-
 
 
 
@@ -237,26 +195,24 @@ export async function atualizarHierarquia(client) {
     const embed = new EmbedBuilder()
 
 
+      .setTitle(`🏷️ ${cargo.nome}`)
+
 
       .setDescription(lista)
-
 
 
       .setColor(role.color || "#2b2d31")
 
 
-
       .setFooter({
 
-
         text:
+        `♻️ Atualizado Automaticamente | Última Atualização: ${horario}`
 
-        `♻️ Atualizado Automaticamente 24h | Última Atualização: ${horario}`
-
-
-      });
+      })
 
 
+      .setTimestamp();
 
 
 
@@ -267,23 +223,19 @@ export async function atualizarHierarquia(client) {
     const dadosMensagem = {
 
 
-
-      content: `# ${role} - [${membrosCargo.length}] membros`,
+      content:
+      `# ${role} - [${membrosCargo.length}] membros`,
 
 
 
       allowedMentions: {
 
-
         roles: [role.id]
-
 
       },
 
 
-
       embeds: [embed]
-
 
 
     };
@@ -294,24 +246,17 @@ export async function atualizarHierarquia(client) {
 
 
 
-
-
-    // EDITA A MENSAGEM DO CARGO
+    // EDITA A MENSAGEM EXISTENTE
 
     if (mensagensSalvas[cargo.id]) {
-
 
 
       try {
 
 
-
         const mensagem = await canal.messages.fetch(
-
           mensagensSalvas[cargo.id]
-
         );
-
 
 
 
@@ -319,22 +264,17 @@ export async function atualizarHierarquia(client) {
 
 
 
-
         continue;
-
 
 
 
       } catch {
 
 
-
         delete mensagensSalvas[cargo.id];
 
 
-
       }
-
 
 
     }
@@ -346,15 +286,13 @@ export async function atualizarHierarquia(client) {
 
 
 
-
-    // CRIA SOMENTE SE NÃO EXISTIR
+    // CRIA APENAS SE NÃO EXISTIR
 
     const novaMensagem = await canal.send(dadosMensagem);
 
 
 
     mensagensSalvas[cargo.id] = novaMensagem.id;
-
 
 
 
@@ -366,20 +304,12 @@ export async function atualizarHierarquia(client) {
 
 
 
-
-
   salvarMensagens(mensagensSalvas);
 
 
 
-
-
-  console.log("📁 Arquivo salvo em:", arquivoMensagens);
-
   console.log("📁 IDs salvos:", mensagensSalvas);
 
   console.log("♻️ Hierarquia sincronizada!");
-
-
 
 }
