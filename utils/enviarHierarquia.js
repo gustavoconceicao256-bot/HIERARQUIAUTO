@@ -1,18 +1,16 @@
-import { EmbedBuilder } from "discord.js";
 import config from "../config.js";
 
 export async function enviarHierarquia(client) {
 
   const guild = client.guilds.cache.get(config.guildId);
-
-  if (!guild) return console.log("Servidor não encontrado");
+  if (!guild) return;
 
   const canal = guild.channels.cache.get(config.canalId);
+  if (!canal) return;
 
-  if (!canal) return console.log("Canal não encontrado");
 
+  let mensagem = "";
 
-  let texto = "";
 
   for (const cargo of config.cargos) {
 
@@ -23,38 +21,57 @@ export async function enviarHierarquia(client) {
 
     const membros = role.members.map(member => {
 
-      // pega ID do personagem se tiver no nick
-      const id = member.nickname?.match(/\|\s*(\d+)/)?.[1];
+      let idPersonagem = "";
 
-      return id
-        ? `• ${member} | ${id}`
+      if (member.nickname) {
+        const pegarID = member.nickname.match(/\d+/);
+        if (pegarID) idPersonagem = pegarID[0];
+      }
+
+      return idPersonagem
+        ? `• ${member} | ${idPersonagem}`
         : `• ${member}`;
 
     });
 
 
-    texto += `## ${cargo.nome} - [${membros.length}] membros\n`;
+    mensagem += `## ${role.name} - [${membros.length}] membros\n\n`;
 
-    texto += `${role}\n\n`;
+    mensagem += `${role}\n\n`;
 
 
     if (membros.length > 0) {
-      texto += membros.join("\n");
+      mensagem += membros.join("\n");
     } else {
-      texto += "Sem membros";
+      mensagem += "Sem membros";
     }
 
 
-    texto += `\n\nAtualizado Automaticamente | Última Atualização: <t:${Math.floor(Date.now()/1000)}:f>\n\n`;
+    mensagem += `\n\n━━━━━━━━━━━━━━━━━━\n`;
+
+    mensagem += `Atualizado Automaticamente | Última Atualização: ${new Date().toLocaleString("pt-BR")}\n\n`;
 
   }
 
 
-  const mensagem = await canal.messages.fetch(config.mensagemId);
+  let msg;
 
-  await mensagem.edit({
-    content: texto
-  });
+  try {
+    msg = await canal.messages.fetch(config.mensagemId);
+
+    await msg.edit({
+      content: mensagem
+    });
+
+  } catch {
+
+    msg = await canal.send({
+      content: mensagem
+    });
+
+    console.log("Nova mensagem criada:", msg.id);
+
+  }
 
 
   console.log("✅ Hierarquia atualizada!");
