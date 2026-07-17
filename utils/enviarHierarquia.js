@@ -22,7 +22,7 @@ export async function enviarHierarquia(client) {
   ];
 
 
-  // apaga mensagens antigas do bot
+  // Apaga a hierarquia antiga do bot
   const mensagens = await canal.messages.fetch({ limit: 100 });
 
   for (const msg of mensagens.values()) {
@@ -32,11 +32,11 @@ export async function enviarHierarquia(client) {
   }
 
 
-  // pega todos membros do servidor
+  // Busca todos os membros
   const membros = await canal.guild.members.fetch();
 
 
-  // cria lista vazia para cada cargo
+  // Cria lista para cada cargo
   const listaCargos = {};
 
   cargos.forEach(cargo => {
@@ -44,19 +44,19 @@ export async function enviarHierarquia(client) {
   });
 
 
-  // verifica o maior cargo da pessoa
+  // Coloca cada membro somente no cargo mais alto dele
   membros.forEach(member => {
 
     let cargoMaisAlto = null;
-    let indexMaior = -1;
+    let maiorPosicao = -1;
 
 
     cargos.forEach((cargo, index) => {
 
       if (member.roles.cache.has(cargo.id)) {
 
-        if (index > indexMaior) {
-          indexMaior = index;
+        if (index > maiorPosicao) {
+          maiorPosicao = index;
           cargoMaisAlto = cargo;
         }
 
@@ -66,16 +66,18 @@ export async function enviarHierarquia(client) {
 
 
     if (cargoMaisAlto) {
+
       listaCargos[cargoMaisAlto.id].push(
-        `• ${member} | ${member.displayName}`
+        `• ${member}`
       );
+
     }
 
   });
 
 
 
-  // envia cada cargo
+  // Envia cada cargo separado
   for (const cargo of cargos) {
 
     const role = canal.guild.roles.cache.get(cargo.id);
