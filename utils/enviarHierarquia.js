@@ -22,7 +22,7 @@ export async function enviarHierarquia(client) {
   ];
 
 
-  // Apaga hierarquia antiga
+  // Apaga mensagens antigas do bot
   const mensagens = await canal.messages.fetch({ limit: 100 });
 
   for (const msg of mensagens.values()) {
@@ -41,8 +41,7 @@ export async function enviarHierarquia(client) {
   });
 
 
-
-  // Coloca o membro somente no cargo mais alto
+  // Coloca cada pessoa somente no cargo mais alto dela
   membros.forEach(member => {
 
     let cargoMaisAlto = null;
@@ -78,7 +77,7 @@ export async function enviarHierarquia(client) {
 
 
 
-  // Cria um embed para cada cargo
+  // Cria 1 embed por cargo
   for (const cargo of cargos) {
 
     const role = canal.guild.roles.cache.get(cargo.id);
@@ -93,18 +92,18 @@ export async function enviarHierarquia(client) {
 
 
     const lista = membrosCargo
-      .map(member => `• ${member}`)
+      .map(member => `• ${member} | ${member.displayName}`)
       .join("\n");
 
 
 
     const embed = new EmbedBuilder()
 
-      .setTitle(`${role.name} - [${membrosCargo.length}] membros`)
+      // Cargo mencionado grande no título
+      .setTitle(`${role} - [${membrosCargo.length}] membros`)
 
-      .setDescription(
-        `${role}\n\n${lista}`
-      )
+      // Somente lista de membros (sem repetir cargo)
+      .setDescription(lista)
 
       .setColor("#2b2d31")
 
@@ -122,4 +121,5 @@ export async function enviarHierarquia(client) {
 
 
   console.log("♻️ Hierarquia atualizada!");
+
 }
