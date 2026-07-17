@@ -1,5 +1,4 @@
-import { enviarHierarquia } from "../utils/enviarHierarquia.js";
-
+import { atualizarHierarquia } from "../utils/atualizarHierarquia.js";
 export default {
   name: "guildMemberUpdate",
 
