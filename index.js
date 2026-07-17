@@ -82,6 +82,7 @@ async function atualizarHierarquia() {
 
 
 
+
 client.once("ready", async () => {
 
   console.log(`✅ ${client.user.tag} está online!`);
