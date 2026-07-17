@@ -161,6 +161,20 @@ export async function atualizarHierarquia(client) {
 
 
 
+    const horario = new Date().toLocaleTimeString("pt-BR", {
+
+      timeZone: "America/Sao_Paulo",
+
+      hour: "2-digit",
+
+      minute: "2-digit"
+
+    });
+
+
+
+
+
     const embed = new EmbedBuilder()
 
       .setDescription(lista)
@@ -170,10 +184,7 @@ export async function atualizarHierarquia(client) {
       .setFooter({
 
         text:
-        `♻️ Atualizado Automaticamente 24h | Última Atualização: ${new Date().toLocaleTimeString("pt-BR", {
-          hour: "2-digit",
-          minute: "2-digit"
-        })}`
+        `♻️ Atualizado Automaticamente 24h | Última Atualização: ${horario}`
 
       });
 
@@ -183,7 +194,9 @@ export async function atualizarHierarquia(client) {
 
     const dadosMensagem = {
 
+
       content: `# ${role} - [${membrosCargo.length}] membros`,
+
 
       allowedMentions: {
 
@@ -191,9 +204,13 @@ export async function atualizarHierarquia(client) {
 
       },
 
+
       embeds: [embed]
 
+
     };
+
+
 
 
 
@@ -234,6 +251,7 @@ export async function atualizarHierarquia(client) {
 
 
   }
+
 
 
 
