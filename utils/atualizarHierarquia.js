@@ -18,6 +18,7 @@ export async function atualizarHierarquia(client) {
   const membros = await canal.guild.members.fetch();
 
 
+
   const listaCargos = {};
 
   config.cargos.forEach(cargo => {
@@ -26,7 +27,6 @@ export async function atualizarHierarquia(client) {
 
 
 
-  // deixa somente o cargo mais alto
   membros.forEach(member => {
 
     let maior = -1;
@@ -65,6 +65,7 @@ export async function atualizarHierarquia(client) {
   let indice = 0;
 
 
+
   for (const cargo of config.cargos) {
 
 
@@ -75,6 +76,7 @@ export async function atualizarHierarquia(client) {
 
 
     const membrosCargo = listaCargos[cargo.id];
+
 
 
     const lista = membrosCargo.length > 0
@@ -109,7 +111,6 @@ export async function atualizarHierarquia(client) {
 
     if (mensagem) {
 
-
       await mensagem.edit({
 
         content: `# ${role} - [${membrosCargo.length}] membros`,
@@ -138,18 +139,15 @@ export async function atualizarHierarquia(client) {
 
       });
 
-
     }
 
 
     indice++;
 
-
   }
 
 
 
-  // remove mensagens extras
   const extras = mensagensBot.filter(
     (_, index) => index >= config.cargos.length
   );
