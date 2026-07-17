@@ -4,7 +4,6 @@ export async function enviarHierarquia(client) {
 
   const canal = await client.channels.fetch("1527420188503576629");
 
-
   const cargos = [
     { nome: "00", id: "1521984073969569883" },
     { nome: "01", id: "1522086542716305548" },
@@ -18,69 +17,22 @@ export async function enviarHierarquia(client) {
     { nome: "Tático", id: "1460499779602878548" },
     { nome: "Recrutador", id: "1461194746235195525" },
     { nome: "Vendas", id: "1523014992927133759" },
-    { nome: "Membro", id: "1521938900418035842" },
+    { nome: "MEMBRO ✨", id: "1521938900418035842" },
     { nome: "Olheiro", id: "1522085772826775713" }
   ];
 
 
-  // Apaga hierarquia antiga
   const mensagens = await canal.messages.fetch({ limit: 100 });
 
-  for (const msg of mensagens.values()) {
-    if (msg.author.id === client.user.id) {
-      await msg.delete();
-    }
+  const antigas = mensagens.filter(
+    msg => msg.author.id === client.user.id
+  );
+
+  for (const msg of antigas.values()) {
+    await msg.delete();
   }
 
 
-  const membros = await canal.guild.members.fetch();
-
-
-  const listaCargos = {};
-
-  cargos.forEach(cargo => {
-    listaCargos[cargo.id] = [];
-  });
-
-
-
-  // Coloca cada membro somente no cargo mais alto
-  membros.forEach(member => {
-
-    let cargoMaisAlto = null;
-    let maiorPosicao = -1;
-
-
-    cargos.forEach(cargo => {
-
-      const role = canal.guild.roles.cache.get(cargo.id);
-
-      if (!role) return;
-
-
-      if (member.roles.cache.has(cargo.id)) {
-
-        if (role.position > maiorPosicao) {
-
-          maiorPosicao = role.position;
-          cargoMaisAlto = cargo;
-
-        }
-
-      }
-
-    });
-
-
-    if (cargoMaisAlto) {
-      listaCargos[cargoMaisAlto.id].push(member);
-    }
-
-  });
-
-
-
-  // Cria um embed para cada cargo
   for (const cargo of cargos) {
 
     const role = canal.guild.roles.cache.get(cargo.id);
@@ -88,32 +40,22 @@ export async function enviarHierarquia(client) {
     if (!role) continue;
 
 
-    const membrosCargo = listaCargos[cargo.id];
-
-
-    if (membrosCargo.length === 0) continue;
-
-
-    const lista = membrosCargo
-      .map(member => `• ${member}`)
-      .join("\n");
-
+    const membros = role.members.map(member => {
+      return `• ${member} | ${member.displayName}`;
+    });
 
 
     const embed = new EmbedBuilder()
-
-      .setTitle(`${role.name} - [${membrosCargo.length}] membros`)
-
+      .setTitle(`${role} - [${membros.length}] membros`)
       .setDescription(
-        `${role}\n\n${lista}`
+        membros.length > 0
+          ? membros.join("\n")
+          : "Sem membros"
       )
-
       .setColor("#2b2d31")
-
       .setFooter({
-        text: `<a:carregando2:1411972838558007328> Atualizado Automaticamente | Última Atualização: ${new Date().toLocaleString("pt-BR")}`
+        text: `♻️ Atualizado Automaticamente | Última Atualização: ${new Date().toLocaleString("pt-BR")}`
       });
-
 
 
     await canal.send({
