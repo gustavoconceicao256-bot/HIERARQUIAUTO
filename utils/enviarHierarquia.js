@@ -41,7 +41,7 @@ export async function enviarHierarquia(client) {
   });
 
 
-  // Coloca cada pessoa somente no cargo mais alto dela
+  // Coloca cada membro somente no cargo mais alto
   membros.forEach(member => {
 
     let cargoMaisAlto = null;
@@ -77,7 +77,7 @@ export async function enviarHierarquia(client) {
 
 
 
-  // Cria 1 embed por cargo
+  // Cria um embed para cada cargo
   for (const cargo of cargos) {
 
     const role = canal.guild.roles.cache.get(cargo.id);
@@ -91,18 +91,17 @@ export async function enviarHierarquia(client) {
     if (membrosCargo.length === 0) continue;
 
 
+    // Apenas menciona o usuário, sem repetir nome
     const lista = membrosCargo
-      .map(member => `• ${member} | ${member.displayName}`)
+      .map(member => `• ${member}`)
       .join("\n");
 
 
 
     const embed = new EmbedBuilder()
 
-      // Cargo mencionado grande no título
-      .setTitle(`${role} - [${membrosCargo.length}] membros`)
+      .setTitle("📋 HIERARQUIA")
 
-      // Somente lista de membros (sem repetir cargo)
       .setDescription(lista)
 
       .setColor("#2b2d31")
@@ -114,7 +113,12 @@ export async function enviarHierarquia(client) {
 
 
     await canal.send({
+
+      // Cargo mencionado corretamente
+      content: `${role} - [${membrosCargo.length}] membros`,
+
       embeds: [embed]
+
     });
 
   }
