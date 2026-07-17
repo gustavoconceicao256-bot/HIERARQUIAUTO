@@ -11,20 +11,31 @@ import { atualizarHierarquia as executarHierarquia } from "./utils/atualizarHier
 dotenv.config();
 
 
+
 const app = express();
 
 
+
 app.get("/", (req, res) => {
+
   res.send("Bot de hierarquia online!");
+
 });
+
 
 
 const PORT = process.env.PORT || 3000;
 
 
+
 app.listen(PORT, () => {
+
   console.log(`🌐 Servidor web iniciado na porta ${PORT}`);
+
 });
+
+
+
 
 
 
@@ -42,7 +53,11 @@ const client = new Client({
 
 
 
+
+
 console.log("TOKEN EXISTE?", !!process.env.TOKEN);
+
+
 
 
 
@@ -52,33 +67,49 @@ let atualizando = false;
 
 async function atualizarHierarquia() {
 
+
   if (atualizando) return;
+
 
 
   atualizando = true;
 
 
+
   try {
+
 
     console.log("♻️ Atualizando hierarquia...");
 
+
+
     await executarHierarquia(client);
+
+
 
     console.log("✅ Hierarquia atualizada!");
 
-  }
 
 
-  catch (erro) {
+  } catch (erro) {
+
 
     console.log("❌ Erro na hierarquia:", erro);
 
+
+
   }
+
 
 
   atualizando = false;
 
+
+
 }
+
+
+
 
 
 
@@ -87,40 +118,86 @@ async function atualizarHierarquia() {
 client.once("ready", async () => {
 
 
+
   console.log(`✅ ${client.user.tag} está online!`);
+
 
 
   readyEvent.execute(client);
 
 
 
+
   await atualizarHierarquia();
+
 
 
 });
 
 
+
+
+
+
+
+
+
+// Aguarda as alterações de cargo terminarem
+// e atualiza somente o resultado final
+
+let timerHierarquia;
 
 
 
 client.on("guildMemberUpdate", async (oldMember, newMember) => {
 
 
+
   console.log("🔄 Mudança de cargo detectada!");
 
 
 
+
   await guildMemberUpdateEvent.execute(
+
     oldMember,
+
     newMember
+
   );
 
 
 
-  await atualizarHierarquia();
+
+
+  clearTimeout(timerHierarquia);
+
+
+
+
+
+  timerHierarquia = setTimeout(async () => {
+
+
+
+    console.log("⏳ Atualizando resultado final da hierarquia...");
+
+
+
+    await atualizarHierarquia();
+
+
+
+
+  }, 3000);
+
+
+
 
 
 });
+
+
 
 
 
