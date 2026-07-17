@@ -41,7 +41,7 @@ export async function enviarHierarquia(client) {
   });
 
 
-  // Coloca cada membro somente no cargo mais alto
+  // Coloca o membro somente no cargo mais alto
   membros.forEach(member => {
 
     let cargoMaisAlto = null;
@@ -58,10 +58,8 @@ export async function enviarHierarquia(client) {
       if (member.roles.cache.has(cargo.id)) {
 
         if (role.position > maiorPosicao) {
-
           maiorPosicao = role.position;
           cargoMaisAlto = cargo;
-
         }
 
       }
@@ -77,7 +75,7 @@ export async function enviarHierarquia(client) {
 
 
 
-  // Cria um embed para cada cargo
+  // Cria 1 embed por cargo
   for (const cargo of cargos) {
 
     const role = canal.guild.roles.cache.get(cargo.id);
@@ -91,7 +89,7 @@ export async function enviarHierarquia(client) {
     if (membrosCargo.length === 0) continue;
 
 
-    // Apenas menciona o usuário, sem repetir nome
+    // Apenas menção do usuário, sem repetir nome
     const lista = membrosCargo
       .map(member => `• ${member}`)
       .join("\n");
@@ -99,8 +97,6 @@ export async function enviarHierarquia(client) {
 
 
     const embed = new EmbedBuilder()
-
-      .setTitle("📋 HIERARQUIA")
 
       .setDescription(lista)
 
@@ -114,7 +110,7 @@ export async function enviarHierarquia(client) {
 
     await canal.send({
 
-      // Cargo mencionado corretamente
+      // Menção real do cargo (fora do embed)
       content: `${role} - [${membrosCargo.length}] membros`,
 
       embeds: [embed]
