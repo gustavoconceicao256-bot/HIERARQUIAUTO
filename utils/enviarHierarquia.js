@@ -22,7 +22,6 @@ export async function enviarHierarquia(client) {
   ];
 
 
-  // Apaga mensagens antigas do bot
   const mensagens = await canal.messages.fetch({ limit: 100 });
 
   for (const msg of mensagens.values()) {
@@ -41,7 +40,6 @@ export async function enviarHierarquia(client) {
   });
 
 
-  // Coloca cada pessoa somente no cargo mais alto
   membros.forEach(member => {
 
     let cargoMaisAlto = null;
@@ -58,10 +56,8 @@ export async function enviarHierarquia(client) {
       if (member.roles.cache.has(cargo.id)) {
 
         if (role.position > maiorPosicao) {
-
           maiorPosicao = role.position;
           cargoMaisAlto = cargo;
-
         }
 
       }
@@ -77,7 +73,6 @@ export async function enviarHierarquia(client) {
 
 
 
-  // Cria um embed para cada cargo
   for (const cargo of cargos) {
 
     const role = canal.guild.roles.cache.get(cargo.id);
@@ -87,14 +82,12 @@ export async function enviarHierarquia(client) {
 
     const membrosCargo = listaCargos[cargo.id];
 
-
     if (membrosCargo.length === 0) continue;
 
 
     const lista = membrosCargo
       .map(member => `• ${member}`)
       .join("\n");
-
 
 
     const embed = new EmbedBuilder()
@@ -111,8 +104,7 @@ export async function enviarHierarquia(client) {
 
     await canal.send({
 
-      // Aqui fica a menção real do cargo
-      content: `${role} - [${membrosCargo.length}] membros`,
+      content: `# ${role} - [${membrosCargo.length}] membros`,
 
       embeds: [embed]
 
