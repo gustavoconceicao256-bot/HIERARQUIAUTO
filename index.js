@@ -2,7 +2,7 @@ import { Client, GatewayIntentBits } from "discord.js";
 import dotenv from "dotenv";
 import express from "express";
 
-import "./utils/Keepalive/keepalive.js";
+import "./utils/keepalive/keepalive.js";
 
 import readyEvent from "./events/ready.js";
 import guildMemberUpdateEvent from "./events/guildMemberUpdate.js";
