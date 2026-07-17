@@ -13,9 +13,20 @@ export async function enviarHierarquia(client) {
     .setTimestamp();
 
   const cargos = [
-    // COLOQUE SEUS CARGOS AQUI
-    // Exemplo:
-    // { id: "ID_DO_CARGO", nome: "NOME DO CARGO" }
+    { nome: "00", id: "1521984073969569883" },
+    { nome: "01", id: "1522086542716305548" },
+    { nome: "02", id: "1522086730008629289" },
+    { nome: "Líder Tático", id: "1460499655640092780" },
+    { nome: "Gerente Geral", id: "1460375600681324668" },
+    { nome: "Gerente Tático", id: "1522793484036083812" },
+    { nome: "Gerente de Vendas", id: "1522789809934827582" },
+    { nome: "Gerente de Recrutamento", id: "1522788240598237314" },
+    { nome: "Gerente de Farme", id: "1460375600681324669" },
+    { nome: "Tático", id: "1460499779602878548" },
+    { nome: "Recrutador", id: "1461194746235195525" },
+    { nome: "Vendas", id: "1523014992927133759" },
+    { nome: "Membro", id: "1521938900418035842" },
+    { nome: "Olheiro", id: "1522085772826775713" }
   ];
 
   for (const cargo of cargos) {
@@ -29,7 +40,7 @@ export async function enviarHierarquia(client) {
     });
 
     embed.addFields({
-      name: `${role.name} - [${membros.length}] membros`,
+      name: `${cargo.nome} - [${membros.length}] membros`,
       value: membros.length > 0
         ? membros.join("\n")
         : "Sem membros"
@@ -37,13 +48,13 @@ export async function enviarHierarquia(client) {
   }
 
 
-  // procura a mensagem antiga do bot
   const mensagens = await canal.messages.fetch({ limit: 20 });
 
   const antiga = mensagens.find(
-    msg => msg.author.id === client.user.id &&
-    msg.embeds.length > 0 &&
-    msg.embeds[0].title === "📋 HIERARQUIA DA ORGANIZAÇÃO"
+    msg =>
+      msg.author.id === client.user.id &&
+      msg.embeds.length > 0 &&
+      msg.embeds[0].title === "📋 HIERARQUIA DA ORGANIZAÇÃO"
   );
 
 
