@@ -23,6 +23,16 @@ export async function enviarHierarquia(client) {
   ];
 
 
+  // Apaga hierarquia antiga
+  const mensagens = await canal.messages.fetch({ limit: 100 });
+
+  for (const msg of mensagens.values()) {
+    if (msg.author.id === client.user.id) {
+      await msg.delete();
+    }
+  }
+
+
   const membros = await canal.guild.members.fetch();
 
 
@@ -34,10 +44,10 @@ export async function enviarHierarquia(client) {
 
 
 
-  // coloca cada pessoa somente no cargo mais alto
+  // Coloca cada membro somente no cargo mais alto
   membros.forEach(member => {
 
-    let cargoEscolhido = null;
+    let cargoMaisAlto = null;
     let maiorPosicao = -1;
 
 
@@ -51,8 +61,10 @@ export async function enviarHierarquia(client) {
       if (member.roles.cache.has(cargo.id)) {
 
         if (role.position > maiorPosicao) {
+
           maiorPosicao = role.position;
-          cargoEscolhido = cargo;
+          cargoMaisAlto = cargo;
+
         }
 
       }
@@ -60,20 +72,15 @@ export async function enviarHierarquia(client) {
     });
 
 
-    if (cargoEscolhido) {
-      listaCargos[cargoEscolhido.id].push(member);
+    if (cargoMaisAlto) {
+      listaCargos[cargoMaisAlto.id].push(member);
     }
 
   });
 
 
 
-  const embed = new EmbedBuilder()
-    .setColor("#2b2d31")
-    .setTimestamp();
-
-
-
+  // Cria um embed para cada cargo
   for (const cargo of cargos) {
 
     const role = canal.guild.roles.cache.get(cargo.id);
@@ -87,46 +94,27 @@ export async function enviarHierarquia(client) {
     if (membrosCargo.length === 0) continue;
 
 
-    const lista = membrosCargo.map(member => {
-      return `• ${member}`;
-    }).join("\n");
+    const lista = membrosCargo
+      .map(member => `• ${member}`)
+      .join("\n");
 
 
 
-    embed.addFields({
-      name: `${role.name} - [${membrosCargo.length}] membros`,
-      value:
-        `${role}\n` +
-        `${lista}`
-    });
+    const embed = new EmbedBuilder()
 
-  }
+      .setTitle(`${role.name} - [${membrosCargo.length}] membros`)
 
+      .setDescription(
+        `${role}\n\n${lista}`
+      )
 
+      .setColor("#2b2d31")
 
-  embed.setFooter({
-    text: "Atualizado Automaticamente"
-  });
-
+      .setFooter({
+        text: `<a:carregando2:1411972838558007328> Atualizado Automaticamente | Última Atualização: ${new Date().toLocaleString("pt-BR")}`
+      });
 
 
-  const mensagens = await canal.messages.fetch({ limit: 20 });
-
-
-  const antiga = mensagens.find(
-    msg =>
-      msg.author.id === client.user.id &&
-      msg.embeds.length > 0
-  );
-
-
-  if (antiga) {
-
-    await antiga.edit({
-      embeds: [embed]
-    });
-
-  } else {
 
     await canal.send({
       embeds: [embed]
