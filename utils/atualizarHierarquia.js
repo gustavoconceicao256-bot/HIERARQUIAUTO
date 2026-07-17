@@ -1,17 +1,41 @@
 import { EmbedBuilder } from "discord.js";
+import fs from "fs";
 import config from "../config.js";
 
+const arquivoMensagens = "./utils/mensagensHierarquia.json";
+
+
+function lerMensagens() {
+
+  if (!fs.existsSync(arquivoMensagens)) {
+    return {};
+  }
+
+  return JSON.parse(
+    fs.readFileSync(arquivoMensagens, "utf8")
+  );
+
+}
+
+
+function salvarMensagens(dados) {
+
+  fs.writeFileSync(
+    arquivoMensagens,
+    JSON.stringify(dados, null, 2)
+  );
+
+}
+
+
+
 export async function atualizarHierarquia(client) {
+
 
   const canal = await client.channels.fetch(config.canalId);
 
 
-  const mensagens = await canal.messages.fetch({ limit: 100 });
-
-
-  const mensagensBot = mensagens.filter(
-    msg => msg.author.id === client.user.id
-  );
+  const mensagensSalvas = lerMensagens();
 
 
 
@@ -22,54 +46,70 @@ export async function atualizarHierarquia(client) {
   const listaCargos = {};
 
   config.cargos.forEach(cargo => {
+
     listaCargos[cargo.id] = [];
+
   });
 
 
 
+  // deixa somente o cargo mais alto
   membros.forEach(member => {
+
 
     let maior = -1;
     let cargoEscolhido = null;
 
 
+
     config.cargos.forEach(cargo => {
 
+
       const role = canal.guild.roles.cache.get(cargo.id);
+
 
       if (!role) return;
 
 
+
       if (member.roles.cache.has(cargo.id)) {
+
 
         if (role.position > maior) {
 
+
           maior = role.position;
           cargoEscolhido = cargo;
+
 
         }
 
       }
 
+
     });
 
 
+
     if (cargoEscolhido) {
+
       listaCargos[cargoEscolhido.id].push(member);
+
     }
+
 
   });
 
 
-
-  let indice = 0;
 
 
 
   for (const cargo of config.cargos) {
 
 
+
     const role = canal.guild.roles.cache.get(cargo.id);
+
 
     if (!role) continue;
 
@@ -84,6 +124,8 @@ export async function atualizarHierarquia(client) {
       ? membrosCargo.map(member => `• ${member}`).join("\n")
 
       : "Sem membros";
+
+
 
 
 
@@ -105,59 +147,80 @@ export async function atualizarHierarquia(client) {
 
 
 
-    const mensagem = mensagensBot.at(indice);
+
+
+    const conteudo = {
+
+      content: `# ${role} - [${membrosCargo.length}] membros`,
+
+      allowedMentions: {
+
+        roles: [role.id]
+
+      },
+
+      embeds: [embed]
+
+    };
 
 
 
-    if (mensagem) {
-
-      await mensagem.edit({
-
-        content: `# ${role} - [${membrosCargo.length}] membros`,
-
-        allowedMentions: {
-          roles: [role.id]
-        },
-
-        embeds: [embed]
-
-      });
 
 
-    } else {
+
+    // EDITA se já existe
+    if (mensagensSalvas[cargo.id]) {
 
 
-      await canal.send({
+      try {
 
-        content: `# ${role} - [${membrosCargo.length}] membros`,
 
-        allowedMentions: {
-          roles: [role.id]
-        },
+        const mensagem = await canal.messages.fetch(
+          mensagensSalvas[cargo.id]
+        );
 
-        embeds: [embed]
 
-      });
+        await mensagem.edit(conteudo);
+
+
+
+      } catch {
+
+
+        delete mensagensSalvas[cargo.id];
+
+
+      }
+
+
 
     }
 
 
-    indice++;
+
+
+
+    // CRIA se não existe
+    if (!mensagensSalvas[cargo.id]) {
+
+
+      const mensagem = await canal.send(conteudo);
+
+
+
+      mensagensSalvas[cargo.id] = mensagem.id;
+
+
+      salvarMensagens(mensagensSalvas);
+
+
+    }
+
+
 
   }
 
 
-
-  const extras = mensagensBot.filter(
-    (_, index) => index >= config.cargos.length
-  );
-
-
-  for (const msg of extras.values()) {
-
-    await msg.delete();
-
-  }
 
 
 
