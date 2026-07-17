@@ -4,6 +4,7 @@ export async function enviarHierarquia(client) {
 
   const canal = await client.channels.fetch("1527420188503576629");
 
+
   const cargos = [
     { nome: "00", id: "1521984073969569883" },
     { nome: "01", id: "1522086542716305548" },
@@ -22,7 +23,7 @@ export async function enviarHierarquia(client) {
   ];
 
 
-  // Apaga a hierarquia antiga do bot
+  // apagar mensagens antigas do bot
   const mensagens = await canal.messages.fetch({ limit: 100 });
 
   for (const msg of mensagens.values()) {
@@ -32,11 +33,11 @@ export async function enviarHierarquia(client) {
   }
 
 
-  // Busca todos os membros
+  // buscar membros do servidor
   const membros = await canal.guild.members.fetch();
 
 
-  // Cria lista para cada cargo
+  // criar lista vazia para os cargos
   const listaCargos = {};
 
   cargos.forEach(cargo => {
@@ -44,20 +45,28 @@ export async function enviarHierarquia(client) {
   });
 
 
-  // Coloca cada membro somente no cargo mais alto dele
+
+  // escolher somente o cargo mais alto REAL do Discord
   membros.forEach(member => {
 
-    let cargoMaisAlto = null;
+    let cargoEscolhido = null;
     let maiorPosicao = -1;
 
 
-    cargos.forEach((cargo, index) => {
+    cargos.forEach(cargo => {
+
+      const role = canal.guild.roles.cache.get(cargo.id);
+
+      if (!role) return;
+
 
       if (member.roles.cache.has(cargo.id)) {
 
-        if (index > maiorPosicao) {
-          maiorPosicao = index;
-          cargoMaisAlto = cargo;
+        if (role.position > maiorPosicao) {
+
+          maiorPosicao = role.position;
+          cargoEscolhido = cargo;
+
         }
 
       }
@@ -65,9 +74,9 @@ export async function enviarHierarquia(client) {
     });
 
 
-    if (cargoMaisAlto) {
+    if (cargoEscolhido) {
 
-      listaCargos[cargoMaisAlto.id].push(
+      listaCargos[cargoEscolhido.id].push(
         `• ${member}`
       );
 
@@ -77,7 +86,7 @@ export async function enviarHierarquia(client) {
 
 
 
-  // Envia cada cargo separado
+  // enviar cada cargo separado
   for (const cargo of cargos) {
 
     const role = canal.guild.roles.cache.get(cargo.id);
@@ -85,19 +94,19 @@ export async function enviarHierarquia(client) {
     if (!role) continue;
 
 
-    const lista = listaCargos[cargo.id];
+    const membrosCargo = listaCargos[cargo.id];
 
 
     const embed = new EmbedBuilder()
       .setTitle("📋 HIERARQUIA")
       .setDescription(
-        lista.length > 0
-          ? lista.join("\n")
+        membrosCargo.length > 0
+          ? membrosCargo.join("\n")
           : "Sem membros"
       )
       .setColor("#2b2d31")
       .setFooter({
-        text: `Total: ${lista.length} membro(s)`
+        text: `Total: ${membrosCargo.length} membro(s)`
       })
       .setTimestamp();
 
