@@ -39,6 +39,7 @@ app.listen(PORT, () => {
 
 
 
+
 const client = new Client({
 
   intents: [
@@ -55,8 +56,8 @@ const client = new Client({
 
 
 
-
 console.log("TOKEN EXISTE?", !!process.env.TOKEN);
+
 
 
 
@@ -117,6 +118,7 @@ async function atualizarHierarquia() {
 
 
 
+
 client.once("ready", async () => {
 
 
@@ -126,7 +128,6 @@ client.once("ready", async () => {
 
 
   await readyEvent.execute(client);
-
 
 
 
@@ -144,14 +145,14 @@ client.once("ready", async () => {
 
 
 
-// espera terminar todas as mudanças de cargo
-// e atualiza somente o resultado final
+// Aguarda todas as alterações terminarem
+// Executa somente o último resultado
 
 let timerHierarquia = null;
 
 
 
-client.on("guildMemberUpdate", async (oldMember, newMember) => {
+client.on("guildMemberUpdate", (oldMember, newMember) => {
 
 
 
@@ -159,31 +160,56 @@ client.on("guildMemberUpdate", async (oldMember, newMember) => {
 
 
 
-  await guildMemberUpdateEvent.execute(
-    oldMember,
-    newMember
-  );
+  // cancela o contador anterior
+  if (timerHierarquia) {
+
+    clearTimeout(timerHierarquia);
+
+  }
 
 
 
-  clearTimeout(timerHierarquia);
-
-
-
-
+  // espera 5 segundos sem mudanças
   timerHierarquia = setTimeout(async () => {
 
 
 
-    console.log("⏳ Atualizando resultado final da hierarquia...");
+    try {
 
 
 
-    await atualizarHierarquia();
+      console.log("⏳ Aplicando somente resultado final...");
 
 
 
-  }, 3000);
+      await guildMemberUpdateEvent.execute(
+        oldMember,
+        newMember
+      );
+
+
+
+      await atualizarHierarquia();
+
+
+
+      console.log("✅ Última alteração aplicada!");
+
+
+
+    } catch (erro) {
+
+
+
+      console.log("❌ Erro na atualização final:", erro);
+
+
+
+    }
+
+
+
+  }, 5000);
 
 
 
