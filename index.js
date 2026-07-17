@@ -10,7 +10,9 @@ import { enviarHierarquia } from "./utils/enviarHierarquia.js";
 
 dotenv.config();
 
+
 const app = express();
+
 
 app.get("/", (req, res) => {
   res.send("Bot de hierarquia online!");
@@ -19,31 +21,43 @@ app.get("/", (req, res) => {
 
 const PORT = process.env.PORT || 3000;
 
+
 app.listen(PORT, () => {
   console.log(`🌐 Servidor web iniciado na porta ${PORT}`);
 });
 
 
+
 const client = new Client({
+
   intents: [
+
     GatewayIntentBits.Guilds,
+
     GatewayIntentBits.GuildMembers
+
   ]
+
 });
+
 
 
 console.log("TOKEN EXISTE?", !!process.env.TOKEN);
 
 
-// Evita várias atualizações juntas
+
+// evita várias atualizações ao mesmo tempo
 let atualizando = false;
 
 
-async function atualizarAgora() {
+
+async function atualizarHierarquia() {
 
   if (atualizando) return;
 
+
   atualizando = true;
+
 
   try {
 
@@ -53,11 +67,15 @@ async function atualizarAgora() {
 
     console.log("✅ Hierarquia atualizada!");
 
-  } catch (err) {
+  } 
 
-    console.log("❌ Erro ao atualizar hierarquia:", err);
+
+  catch (erro) {
+
+    console.log("❌ Erro na hierarquia:", erro);
 
   }
+
 
   atualizando = false;
 
@@ -65,28 +83,55 @@ async function atualizarAgora() {
 
 
 
+
+
 client.once("ready", async () => {
+
 
   console.log(`✅ ${client.user.tag} está online!`);
 
-  await readyEvent.execute(client);
 
-  await atualizarAgora();
+
+  readyEvent.execute(client);
+
+
+
+  // cria ou atualiza a hierarquia ao ligar
+
+  await atualizarHierarquia();
+
+
 
 });
+
+
+
 
 
 
 client.on("guildMemberUpdate", async (oldMember, newMember) => {
 
-  console.log("🔄 Cargo alterado detectado!");
 
-  await guildMemberUpdateEvent.execute(oldMember, newMember);
+  console.log("🔄 Mudança de cargo detectada!");
 
-  // Atualiza na hora
-  await atualizarAgora();
+
+
+  await guildMemberUpdateEvent.execute(
+    oldMember,
+    newMember
+  );
+
+
+
+  // atualiza os embeds existentes
+
+  await atualizarHierarquia();
+
+
 
 });
+
+
 
 
 
