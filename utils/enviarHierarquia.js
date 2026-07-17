@@ -2,7 +2,7 @@ import { EmbedBuilder } from "discord.js";
 
 export async function enviarHierarquia(client) {
 
-  const canal = await client.channels.fetch("ID_DO_CANAL_DA_HIERARQUIA");
+  const canal = await client.channels.fetch("1527420188503576629");
 
   const embed = new EmbedBuilder()
     .setTitle("📋 HIERARQUIA DA ORGANIZAÇÃO")
