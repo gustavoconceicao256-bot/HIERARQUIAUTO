@@ -4,14 +4,6 @@ export async function enviarHierarquia(client) {
 
   const canal = await client.channels.fetch("1527420188503576629");
 
-  const embed = new EmbedBuilder()
-    .setTitle("📋 HIERARQUIA DA ORGANIZAÇÃO")
-    .setDescription(
-      "Lista atualizada automaticamente dos membros por cargo."
-    )
-    .setColor("#2b2d31")
-    .setTimestamp();
-
   const cargos = [
     { nome: "00", id: "1521984073969569883" },
     { nome: "01", id: "1522086542716305548" },
@@ -29,50 +21,57 @@ export async function enviarHierarquia(client) {
     { nome: "Olheiro", id: "1522085772826775713" }
   ];
 
+
+  // Apaga a hierarquia antiga do bot
+  const mensagens = await canal.messages.fetch({ limit: 100 });
+
+  const antigas = mensagens.filter(
+    msg =>
+      msg.author.id === client.user.id &&
+      msg.embeds.length > 0 &&
+      msg.embeds[0].title === "📋 HIERARQUIA"
+  );
+
+  for (const msg of antigas.values()) {
+    await msg.delete();
+  }
+
+
+  // Cria um embed para cada cargo
   for (const cargo of cargos) {
 
     const role = canal.guild.roles.cache.get(cargo.id);
 
     if (!role) continue;
 
+
     const membros = role.members.map(member => {
       return `• ${member} | ${member.displayName}`;
     });
 
-    embed.addFields({
-      name: `${cargo.nome} - [${membros.length}] membros`,
-      value: membros.length > 0
-        ? membros.join("\n")
-        : "Sem membros"
-    });
-  }
 
+    const embed = new EmbedBuilder()
+      .setTitle("📋 HIERARQUIA")
+      .setDescription(
+        membros.length > 0
+          ? membros.join("\n")
+          : "Sem membros"
+      )
+      .setColor("#2b2d31")
+      .setFooter({
+        text: `Total: ${membros.length} membro(s)`
+      })
+      .setTimestamp();
 
-  const mensagens = await canal.messages.fetch({ limit: 20 });
-
-  const antiga = mensagens.find(
-    msg =>
-      msg.author.id === client.user.id &&
-      msg.embeds.length > 0 &&
-      msg.embeds[0].title === "📋 HIERARQUIA DA ORGANIZAÇÃO"
-  );
-
-
-  if (antiga) {
-
-    await antiga.edit({
-      embeds: [embed]
-    });
-
-    console.log("♻️ Hierarquia atualizada!");
-
-  } else {
 
     await canal.send({
+      content: `${role}`,
       embeds: [embed]
     });
 
-    console.log("✅ Hierarquia criada!");
-
   }
+
+
+  console.log("♻️ Hierarquia atualizada por cargo!");
+
 }
