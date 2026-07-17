@@ -71,7 +71,13 @@ let atualizando = false;
 async function atualizarHierarquia() {
 
 
-  if (atualizando) return;
+  if (atualizando) {
+
+    console.log("⏳ Atualização já está acontecendo.");
+
+    return;
+
+  }
 
 
 
@@ -145,10 +151,11 @@ client.once("ready", async () => {
 
 
 
-// Aguarda todas as alterações terminarem
-// Executa somente o último resultado
+// BLOQUEADOR DE AÇÕES RÁPIDAS
 
 let timerHierarquia = null;
+
+let ultimaMudanca = null;
 
 
 
@@ -160,7 +167,15 @@ client.on("guildMemberUpdate", (oldMember, newMember) => {
 
 
 
-  // cancela o contador anterior
+  // guarda a última alteração
+  ultimaMudanca = {
+    oldMember,
+    newMember
+  };
+
+
+
+  // cancela qualquer atualização pendente
   if (timerHierarquia) {
 
     clearTimeout(timerHierarquia);
@@ -169,8 +184,15 @@ client.on("guildMemberUpdate", (oldMember, newMember) => {
 
 
 
-  // espera 5 segundos sem mudanças
+
+
+  // espera 5 segundos sem nenhuma mudança
+
   timerHierarquia = setTimeout(async () => {
+
+
+
+    if (!ultimaMudanca) return;
 
 
 
@@ -178,13 +200,16 @@ client.on("guildMemberUpdate", (oldMember, newMember) => {
 
 
 
-      console.log("⏳ Aplicando somente resultado final...");
+      console.log("⏳ Aplicando somente última alteração...");
 
 
 
       await guildMemberUpdateEvent.execute(
-        oldMember,
-        newMember
+
+        ultimaMudanca.oldMember,
+
+        ultimaMudanca.newMember
+
       );
 
 
@@ -193,7 +218,11 @@ client.on("guildMemberUpdate", (oldMember, newMember) => {
 
 
 
-      console.log("✅ Última alteração aplicada!");
+      console.log("✅ Resultado final atualizado!");
+
+
+
+      ultimaMudanca = null;
 
 
 
@@ -201,7 +230,7 @@ client.on("guildMemberUpdate", (oldMember, newMember) => {
 
 
 
-      console.log("❌ Erro na atualização final:", erro);
+      console.log("❌ Erro no resultado final:", erro);
 
 
 
@@ -214,6 +243,7 @@ client.on("guildMemberUpdate", (oldMember, newMember) => {
 
 
 });
+
 
 
 
