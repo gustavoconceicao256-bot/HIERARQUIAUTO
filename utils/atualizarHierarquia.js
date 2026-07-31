@@ -13,184 +13,325 @@ const arquivoMensagens = path.join(
 );
 
 function lerMensagens() {
+
   if (!fs.existsSync(arquivoMensagens)) {
     return {};
   }
 
   try {
+
     return JSON.parse(
       fs.readFileSync(arquivoMensagens, "utf8")
     );
+
   } catch {
+
     return {};
+
   }
+
 }
 
+
 function salvarMensagens(dados) {
+
   fs.writeFileSync(
     arquivoMensagens,
     JSON.stringify(dados, null, 2)
   );
+
 }
+
+
 
 export async function atualizarHierarquia(client) {
 
+
   const canal = await client.channels.fetch(config.canalId);
+
 
   await canal.guild.roles.fetch();
 
+
+
   const mensagensSalvas = lerMensagens();
+
+
 
   const membros = await canal.guild.members.fetch({
     force: true
   });
 
+
+
   const listaCargos = {};
 
+
   config.cargos.forEach(cargo => {
+
     listaCargos[cargo.id] = [];
+
   });
 
 
+
   // pega somente o cargo mais alto da hierarquia
+
   membros.forEach(member => {
 
+
     let maior = -1;
+
     let cargoEscolhido = null;
+
 
 
     config.cargos.forEach(cargo => {
 
+
+
       const role = canal.guild.roles.cache.get(cargo.id);
+
+
 
       if (!role) return;
 
 
+
       if (member.roles.cache.has(cargo.id)) {
+
+
 
         if (role.position > maior) {
 
+
           maior = role.position;
+
           cargoEscolhido = cargo;
+
 
         }
 
+
       }
+
 
     });
 
 
+
     if (cargoEscolhido) {
+
+
       listaCargos[cargoEscolhido.id].push(member);
+
+
     }
 
+
+
   });
+
+
 
 
 
   for (const cargo of config.cargos) {
 
 
+
     const role = canal.guild.roles.cache.get(cargo.id);
 
+
+
     if (!role) continue;
+
+
 
 
     const membrosCargo = listaCargos[cargo.id];
 
 
-    // NOME ESCRITO + MENÇÃO AO LADO
+
+
+
+    // SOMENTE MENÇÃO DO USUÁRIO
+
     const lista = membrosCargo.length > 0
+
       ? membrosCargo
-          .map(member => `• ${member.displayName} - <@${member.id}>`)
+
+          .map(member => `• <@${member.id}>`)
+
           .join("\n")
+
       : "Sem membros";
 
 
+
+
+
+
+
     const horario = new Date().toLocaleTimeString("pt-BR", {
+
       timeZone: "America/Sao_Paulo",
+
       hour: "2-digit",
+
       minute: "2-digit"
+
     });
+
+
+
+
 
 
     const embed = new EmbedBuilder()
 
+
+
       .setTitle(`🏷️ ${cargo.nome}`)
+
+
 
       .setDescription(lista)
 
-      .setColor(role.color || "#2b2d31")
+
+
+      .setColor(role.color ? role.color : "#2b2d31")
+
+
 
       .setFooter({
+
         text: `♻️ Atualizado Automaticamente | Última Atualização: ${horario}`
+
       })
+
+
 
       .setTimestamp();
 
 
 
+
+
+
+
     const dadosMensagem = {
+
+
 
       content: `# ${role} - [${membrosCargo.length}] membros`,
 
+
+
       allowedMentions: {
+
+
 
         roles: [role.id],
 
+
+
         users: membrosCargo.map(m => m.id)
+
+
 
       },
 
+
+
       embeds: [embed]
 
+
+
     };
+
+
+
+
 
 
 
     if (mensagensSalvas[cargo.id]) {
 
 
+
       try {
 
 
+
         const mensagem = await canal.messages.fetch(
+
           mensagensSalvas[cargo.id]
+
         );
+
+
+
 
 
         await mensagem.edit(dadosMensagem);
 
 
+
+
         continue;
+
+
 
 
       } catch {
 
 
+
         delete mensagensSalvas[cargo.id];
+
 
 
       }
 
+
+
     }
+
+
+
+
 
 
 
     const novaMensagem = await canal.send(dadosMensagem);
 
 
+
     mensagensSalvas[cargo.id] = novaMensagem.id;
+
 
 
   }
 
 
+
+
+
+
+
   salvarMensagens(mensagensSalvas);
+
+
+
 
 
   console.log("📁 IDs salvos:", mensagensSalvas);
 
+
+
   console.log("♻️ Hierarquia sincronizada!");
+
+
 
 }
