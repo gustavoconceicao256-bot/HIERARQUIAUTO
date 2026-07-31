@@ -7,7 +7,10 @@ import "./utils/keepalive/keepalive.js";
 import readyEvent from "./events/ready.js";
 import { atualizarHierarquia as executarHierarquia } from "./utils/atualizarHierarquia.js";
 
+
 dotenv.config();
+
+
 
 
 
@@ -29,9 +32,14 @@ const PORT = process.env.PORT || 3000;
 
 app.listen(PORT, () => {
 
-  console.log(`🌐 Servidor web iniciado na porta ${PORT}`);
+  console.log(
+    `🌐 Servidor web iniciado na porta ${PORT}`
+  );
 
 });
+
+
+
 
 
 
@@ -55,7 +63,11 @@ const client = new Client({
 
 
 
-console.log("TOKEN EXISTE?", !!process.env.TOKEN);
+console.log(
+  "TOKEN EXISTE?",
+  !!process.env.TOKEN
+);
+
 
 
 
@@ -66,12 +78,18 @@ let atualizando = false;
 
 
 
+
+
 async function atualizarHierarquia() {
 
 
   if (atualizando) {
 
-    console.log("⏳ Atualização já em andamento.");
+
+    console.log(
+      "⏳ Atualização já em andamento."
+    );
+
 
     return;
 
@@ -86,7 +104,9 @@ async function atualizarHierarquia() {
   try {
 
 
-    console.log("♻️ Atualizando hierarquia...");
+    console.log(
+      "♻️ Atualizando hierarquia..."
+    );
 
 
 
@@ -94,7 +114,9 @@ async function atualizarHierarquia() {
 
 
 
-    console.log("✅ Hierarquia atualizada!");
+    console.log(
+      "✅ Hierarquia atualizada!"
+    );
 
 
 
@@ -136,7 +158,9 @@ async function limparCanalHierarquia() {
 
 
 
-    console.log("🧹 Limpando canal...");
+    console.log(
+      "🧹 Limpando canal..."
+    );
 
 
 
@@ -147,9 +171,12 @@ async function limparCanalHierarquia() {
     do {
 
 
+
       mensagens = await canal.messages.fetch({
         limit: 100
       });
+
+
 
 
 
@@ -169,11 +196,17 @@ async function limparCanalHierarquia() {
 
 
 
+
+
     } while (mensagens.size > 0);
 
 
 
-    console.log("✅ Canal limpo!");
+
+
+    console.log(
+      "✅ Canal limpo!"
+    );
 
 
 
@@ -202,13 +235,33 @@ async function limparCanalHierarquia() {
 client.once("ready", async () => {
 
 
+
   console.log(
     `✅ ${client.user.tag} está online!`
   );
 
 
 
-  await readyEvent.execute(client);
+  try {
+
+
+    await readyEvent.execute(client);
+
+
+
+  } catch (erro) {
+
+
+    console.log(
+      "❌ Erro no ready:",
+      erro
+    );
+
+
+  }
+
+
+
 
 
 
@@ -216,13 +269,20 @@ client.once("ready", async () => {
 
 
 
+
+
   await atualizarHierarquia();
 
 
 
-  // VERIFICAÇÃO AUTOMÁTICA
+
+
+
+
+  // SCAN AUTOMÁTICO DA HIERARQUIA
 
   setInterval(async () => {
+
 
 
     console.log(
@@ -230,11 +290,12 @@ client.once("ready", async () => {
     );
 
 
+
     await atualizarHierarquia();
 
 
 
-  }, 10000);
+  }, 60000);
 
 
 
@@ -248,9 +309,14 @@ client.once("ready", async () => {
 
 
 
-// CONTROLE DE MUDANÇA DE CARGO
+
+
+
+// ATUALIZA QUANDO MUDAR CARGO
 
 let timerHierarquia = null;
+
+
 
 
 
@@ -266,11 +332,15 @@ client.on(
 
 
 
+
   if (timerHierarquia) {
+
 
     clearTimeout(timerHierarquia);
 
+
   }
+
 
 
 
@@ -281,6 +351,7 @@ client.on(
 
 
     try {
+
 
 
       console.log(
@@ -306,6 +377,7 @@ client.on(
     } catch (erro) {
 
 
+
       console.log(
         "❌ Erro atualização cargo:",
         erro
@@ -313,6 +385,8 @@ client.on(
 
 
     }
+
+
 
 
 
@@ -329,4 +403,7 @@ client.on(
 
 
 
-client.login(process.env.TOKEN);
+
+client.login(
+  process.env.TOKEN
+);
