@@ -166,10 +166,8 @@ export async function atualizarHierarquia(client) {
 
 
     const lista = membrosCargo.length > 0
-
-      ? membrosCargo.map(member => `• ${member}`).join("\n")
-
-      : "Sem membros";
+  ? membrosCargo.map(member => `• ${member.displayName}`).join("\n")
+  : "Sem membros";
 
 
 
