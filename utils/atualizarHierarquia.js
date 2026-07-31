@@ -4,182 +4,154 @@ import path from "path";
 import { fileURLToPath } from "url";
 import config from "../config.js";
 
+
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
+
 const arquivoMensagens = path.join(
-  __dirname,
-  "mensagensHierarquia.json"
+    __dirname,
+    "mensagensHierarquia.json"
 );
+
+
 
 function lerMensagens() {
 
-  if (!fs.existsSync(arquivoMensagens)) {
-    return {};
-  }
+    if (!fs.existsSync(arquivoMensagens)) {
+        return {};
+    }
 
-  try {
 
-    return JSON.parse(
-      fs.readFileSync(arquivoMensagens, "utf8")
-    );
+    try {
 
-  } catch {
+        return JSON.parse(
+            fs.readFileSync(arquivoMensagens, "utf8")
+        );
 
-    return {};
+    } catch {
 
-  }
+        return {};
+
+    }
 
 }
+
+
 
 
 function salvarMensagens(dados) {
 
-  fs.writeFileSync(
-    arquivoMensagens,
-    JSON.stringify(dados, null, 2)
-  );
+    fs.writeFileSync(
+        arquivoMensagens,
+        JSON.stringify(dados, null, 2)
+    );
 
 }
+
+
 
 
 
 export async function atualizarHierarquia(client) {
 
 
-  const canal = await client.channels.fetch(config.canalId);
+    const canal = await client.channels.fetch(
+        config.canalId
+    );
 
 
-  await canal.guild.roles.fetch();
-
-
-
-  const mensagensSalvas = lerMensagens();
-
-
-
-  const membros = await canal.guild.members.fetch({
-    force: true
-  });
+    await canal.guild.roles.fetch();
 
 
 
-  const listaCargos = {};
-
-
-  config.cargos.forEach(cargo => {
-
-    listaCargos[cargo.id] = [];
-
-  });
+    const mensagensSalvas = lerMensagens();
 
 
 
-  // pega somente o cargo mais alto da hierarquia
+    const membros = await canal.guild.members.fetch({
+        force: true
+    });
 
-  membros.forEach(member => {
 
 
-    let maior = -1;
 
-    let cargoEscolhido = null;
+    const listaCargos = {};
 
 
 
     config.cargos.forEach(cargo => {
 
+        listaCargos[cargo.id] = [];
 
-
-      const role = canal.guild.roles.cache.get(cargo.id);
-
-
-
-      if (!role) return;
+    });
 
 
 
-      if (member.roles.cache.has(cargo.id)) {
 
 
 
-        if (role.position > maior) {
+    // pega somente o cargo mais alto da hierarquia
+
+    membros.forEach(member => {
 
 
-          maior = role.position;
+        let maior = -1;
 
-          cargoEscolhido = cargo;
+        let cargoEscolhido = null;
+
+
+
+
+        config.cargos.forEach(cargo => {
+
+
+
+            const role = canal.guild.roles.cache.get(
+                cargo.id
+            );
+
+
+
+            if (!role) return;
+
+
+
+
+            if (member.roles.cache.has(cargo.id)) {
+
+
+
+                if (role.position > maior) {
+
+
+                    maior = role.position;
+
+                    cargoEscolhido = cargo;
+
+
+                }
+
+
+            }
+
+
+
+        });
+
+
+
+
+
+        if (cargoEscolhido) {
+
+
+            listaCargos[cargoEscolhido.id].push(member);
 
 
         }
 
 
-      }
-
-
-    });
-
-
-
-    if (cargoEscolhido) {
-
-
-      listaCargos[cargoEscolhido.id].push(member);
-
-
-    }
-
-
-
-  });
-
-
-
-
-
-  for (const cargo of config.cargos) {
-
-
-
-    const role = canal.guild.roles.cache.get(cargo.id);
-
-
-
-    if (!role) continue;
-
-
-
-
-    const membrosCargo = listaCargos[cargo.id];
-
-
-
-
-
-    // SOMENTE MENÇÃO DO USUÁRIO
-
-    const lista = membrosCargo.length > 0
-
-      ? membrosCargo
-
-          .map(member => `• <@${member.id}>`)
-
-          .join("\n")
-
-      : "Sem membros";
-
-
-
-
-
-
-
-    const horario = new Date().toLocaleTimeString("pt-BR", {
-
-      timeZone: "America/Sao_Paulo",
-
-      hour: "2-digit",
-
-      minute: "2-digit"
 
     });
 
@@ -188,67 +160,43 @@ export async function atualizarHierarquia(client) {
 
 
 
-    const embed = new EmbedBuilder()
 
 
 
-      .setTitle(`🏷️ ${cargo.nome}`)
+    for (const cargo of config.cargos) {
 
 
 
-      .setDescription(lista)
+        const role = canal.guild.roles.cache.get(
+            cargo.id
+        );
 
 
 
-      .setColor(role.color ? role.color : "#2b2d31")
+        if (!role) continue;
 
 
 
-      .setFooter({
-
-        text: `♻️ Atualizado Automaticamente | Última Atualização: ${horario}`
-
-      })
 
 
-
-      .setTimestamp();
+        const membrosCargo = listaCargos[cargo.id];
 
 
 
 
 
 
+        // SOMENTE MENÇÃO DO MEMBRO
 
-    const dadosMensagem = {
+        const lista = membrosCargo.length > 0
 
+            ? membrosCargo
 
+                .map(member => `• <@${member.id}>`)
 
-      content: `# ${role} - [${membrosCargo.length}] membros`,
+                .join("\n")
 
-
-
-      allowedMentions: {
-
-
-
-        roles: [role.id],
-
-
-
-        users: membrosCargo.map(m => m.id)
-
-
-
-      },
-
-
-
-      embeds: [embed]
-
-
-
-    };
+            : "Sem membros";
 
 
 
@@ -256,43 +204,157 @@ export async function atualizarHierarquia(client) {
 
 
 
-    if (mensagensSalvas[cargo.id]) {
 
-
-
-      try {
-
-
-
-        const mensagem = await canal.messages.fetch(
-
-          mensagensSalvas[cargo.id]
-
+        const horario = new Date().toLocaleTimeString(
+            "pt-BR",
+            {
+                timeZone: "America/Sao_Paulo",
+                hour: "2-digit",
+                minute: "2-digit"
+            }
         );
 
 
 
 
 
-        await mensagem.edit(dadosMensagem);
+
+
+
+        const embed = new EmbedBuilder()
+
+
+
+            .setTitle(`🏷️ ${cargo.nome}`)
+
+
+
+            .setDescription(lista)
+
+
+
+            .setColor(
+                role.color ? role.color : "#2b2d31"
+            )
+
+
+
+            .setFooter({
+
+                text:
+                `♻️ Atualizado Automaticamente | Última Atualização: ${horario}`
+
+            })
+
+
+
+            .setTimestamp();
 
 
 
 
-        continue;
 
 
 
 
-      } catch {
+
+        const dadosMensagem = {
 
 
 
-        delete mensagensSalvas[cargo.id];
+            content:
+            `# ${role} - [${membrosCargo.length}] membros`,
 
 
 
-      }
+            allowedMentions: {
+
+
+                roles: [
+                    role.id
+                ],
+
+
+                users:
+                membrosCargo.map(m => m.id)
+
+
+            },
+
+
+
+            embeds: [
+                embed
+            ]
+
+
+
+        };
+
+
+
+
+
+
+
+
+
+        if (mensagensSalvas[cargo.id]) {
+
+
+
+            try {
+
+
+
+                const mensagem =
+                await canal.messages.fetch(
+                    mensagensSalvas[cargo.id]
+                );
+
+
+
+
+                await mensagem.edit(
+                    dadosMensagem
+                );
+
+
+
+                continue;
+
+
+
+            } catch {
+
+
+
+                delete mensagensSalvas[cargo.id];
+
+            }
+
+
+
+        }
+
+
+
+
+
+
+
+
+
+        const novaMensagem =
+        await canal.send(
+            dadosMensagem
+        );
+
+
+
+        mensagensSalvas[cargo.id] =
+        novaMensagem.id;
+
 
 
 
@@ -304,34 +366,22 @@ export async function atualizarHierarquia(client) {
 
 
 
-    const novaMensagem = await canal.send(dadosMensagem);
 
-
-
-    mensagensSalvas[cargo.id] = novaMensagem.id;
-
-
-
-  }
+    salvarMensagens(
+        mensagensSalvas
+    );
 
 
 
 
+    console.log(
+        "📁 IDs salvos:",
+        mensagensSalvas
+    );
 
 
-
-  salvarMensagens(mensagensSalvas);
-
-
-
-
-
-  console.log("📁 IDs salvos:", mensagensSalvas);
-
-
-
-  console.log("♻️ Hierarquia sincronizada!");
-
-
+    console.log(
+        "♻️ Hierarquia sincronizada!"
+    );
 
 }
