@@ -63,10 +63,8 @@ const client = new Client({
 
 
 
-console.log(
-  "TOKEN EXISTE?",
-  !!process.env.TOKEN
-);
+console.log("TOKEN:", process.env.TOKEN?.substring(0, 20));
+console.log("TAMANHO:", process.env.TOKEN?.length);
 
 
 
