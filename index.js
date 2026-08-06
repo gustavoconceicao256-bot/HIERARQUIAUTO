@@ -7,7 +7,7 @@ import express from "express";
 
 import "./utils/keepalive/keepalive.js";
 
-import { atualizarHierarquia } from "./utils/atualizarHierarquia.js";
+import { atualizarHierarquia as executarHierarquia } from "./utils/atualizarHierarquia.js";
 
 
 
@@ -176,8 +176,8 @@ async function atualizarHierarquia() {
 
 
 
-  await atualizarHierarquia(client);
-
+await executarHierarquia(client);
+    
 
     console.log(
       "✅ Hierarquia atualizada!"
