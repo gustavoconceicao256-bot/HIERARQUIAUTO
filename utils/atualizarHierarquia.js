@@ -4,7 +4,6 @@ dotenv.config();
 import { Client, GatewayIntentBits } from "discord.js";
 import express from "express";
 
-import "./utils/keepalive/keepalive.js";
 
 import { atualizarHierarquia } from "./utils/atualizarHierarquia.js";
 
