@@ -1,0 +1,13 @@
+name: Deploy Render
+
+on:
+  schedule:
+    - cron: "0 */2 * * *"
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Chamar Deploy Hook
+        run: curl "${{ secrets.RENDER_HOOK }}"
