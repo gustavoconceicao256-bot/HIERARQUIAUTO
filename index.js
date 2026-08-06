@@ -1,4 +1,3 @@
-
 import dotenv from "dotenv";
 dotenv.config();
 
@@ -16,10 +15,9 @@ import { atualizarHierarquia } from "./utils/atualizarHierarquia.js";
 
 const app = express();
 
-
 app.get("/", (req, res) => {
 
-  res.send("Bot de hierarquia online!");
+    res.send("Bot de hierarquia online!");
 
 });
 
@@ -29,12 +27,11 @@ const PORT = process.env.PORT || 3000;
 
 app.listen(PORT, () => {
 
-  console.log(
-    `🌐 Servidor web iniciado na porta ${PORT}`
-  );
+    console.log(
+        `🌐 Servidor web iniciado na porta ${PORT}`
+    );
 
 });
-
 
 
 
@@ -44,15 +41,14 @@ app.listen(PORT, () => {
 
 const client = new Client({
 
-  intents: [
+    intents: [
 
-    GatewayIntentBits.Guilds,
-    GatewayIntentBits.GuildMembers
+        GatewayIntentBits.Guilds,
+        GatewayIntentBits.GuildMembers
 
-  ]
+    ]
 
 });
-
 
 
 
@@ -66,25 +62,23 @@ const TOKEN = process.env.TOKEN?.trim();
 console.log("========== DEBUG TOKEN ==========");
 
 console.log(
-  "TOKEN EXISTE:",
-  !!TOKEN
+    "TOKEN EXISTE:",
+    !!TOKEN
 );
 
 console.log(
-  "TEM PONTO:",
-  TOKEN.includes(".")
+    "TEM PONTO:",
+    TOKEN?.includes(".")
 );
 
 console.log(
-  "FINAL:",
-  TOKEN?.substring(
-    TOKEN.length - 10
-  )
+    "FINAL:",
+    TOKEN?.slice(-10)
 );
 
 console.log(
-  "TAMANHO:",
-  TOKEN?.length
+    "TAMANHO:",
+    TOKEN?.length
 );
 
 console.log("================================");
@@ -93,45 +87,14 @@ console.log("================================");
 
 if (!TOKEN) {
 
-  console.error(
-    "❌ TOKEN não encontrado no .env!"
-  );
-
-  process.exit(1);
-
-}
-
-
-
-
-
-// ===============================
-// LOGIN DISCORD
-// ===============================
-
-async function iniciarBot(){
-
-  try {
-
-    await client.login(TOKEN);
-
-    console.log(
-      "✅ Login realizado!"
-    );
-
-
-  } catch (erro) {
-
     console.error(
-      "❌ Erro login:",
-      erro
+        "❌ TOKEN não encontrado!"
     );
 
     process.exit(1);
 
-  }
-
 }
+
 
 
 
@@ -141,77 +104,81 @@ async function iniciarBot(){
 
 async function limparCanalHierarquia() {
 
-
-  try {
-
-
-    const canal = await client.channels.fetch(
-      "1527420188503576629"
-    );
+    try {
 
 
-
-    console.log(
-      "🧹 Limpando canal..."
-    );
-
+        const canal = await client.channels.fetch(
+            "1527420188503576629"
+        );
 
 
-    let mensagens;
+        if (!canal) {
 
+            console.log(
+                "❌ Canal não encontrado"
+            );
 
+            return;
 
-    do {
-
-
-      mensagens = await canal.messages.fetch({
-
-        limit: 100
-
-      });
+        }
 
 
 
-      for (const msg of mensagens.values()) {
-
-
-        try {
-
-
-          await msg.delete();
-
-
-        } catch {}
+        console.log(
+            "🧹 Limpando canal..."
+        );
 
 
 
-      }
+        let mensagens;
 
 
 
-    } while (mensagens.size > 0);
+        do {
+
+
+            mensagens = await canal.messages.fetch({
+
+                limit: 100
+
+            });
+
+
+
+            for (const mensagem of mensagens.values()) {
+
+
+                try {
+
+                    await mensagem.delete();
+
+                } catch {}
+
+            }
+
+
+
+        } while (mensagens.size > 0);
 
 
 
 
-
-    console.log(
-      "✅ Canal limpo!"
-    );
-
+        console.log(
+            "✅ Canal limpo!"
+        );
 
 
-  } catch (erro) {
+
+    } catch (erro) {
 
 
-    console.log(
-      "❌ Erro limpando canal:",
-      erro
-    );
+        console.log(
+            "❌ Erro limpando canal:",
+            erro
+        );
 
 
-  }
-
+    }
 
 }
 
@@ -219,10 +186,8 @@ async function limparCanalHierarquia() {
 
 
 
-
-
 // ===============================
-// BOT ONLINE
+// READY
 // ===============================
 
 client.once(
@@ -230,34 +195,77 @@ client.once(
 async () => {
 
 
-  console.log(
-    `✅ ${client.user.tag} está online!`
-  );
-
-
-  await limparCanalHierarquia();
-
-
-
-  await atualizarHierarquia();
-
-
-
-
-
-  setInterval(async () => {
-
-
     console.log(
-      "🔍 Checagem automática..."
+        `✅ ${client.user.tag} está online!`
     );
 
 
-    await atualizarHierarquia();
+
+    await limparCanalHierarquia();
 
 
 
-  }, 60000);
+    try {
+
+
+        await atualizarHierarquia(client);
+
+
+
+        console.log(
+            "✅ Hierarquia enviada!"
+        );
+
+
+    } catch (erro) {
+
+
+        console.log(
+            "❌ Erro primeira hierarquia:",
+            erro
+        );
+
+
+    }
+
+
+
+
+
+    setInterval(async () => {
+
+
+        console.log(
+            "🔍 Checagem automática..."
+        );
+
+
+
+        try {
+
+
+            await atualizarHierarquia(client);
+
+
+
+            console.log(
+                "♻️ Hierarquia atualizada!"
+            );
+
+
+        } catch (erro) {
+
+
+            console.log(
+                "❌ Erro atualização automática:",
+                erro
+            );
+
+
+        }
+
+
+    }, 60000);
 
 
 
@@ -270,7 +278,7 @@ async () => {
 
 
 // ===============================
-// ATUALIZA QUANDO MUDAR CARGO
+// ALTERAÇÃO DE CARGO
 // ===============================
 
 let timerHierarquia = null;
@@ -282,67 +290,62 @@ client.on(
 (oldMember, newMember) => {
 
 
-
-  console.log(
-    "🔄 Mudança de cargo detectada!"
-  );
-
-
-
-  if (timerHierarquia) {
-
-    clearTimeout(timerHierarquia);
-
-  }
+    console.log(
+        "🔄 Mudança de cargo detectada!"
+    );
 
 
 
+    if (timerHierarquia) {
 
-
-  timerHierarquia = setTimeout(
-  async () => {
-
-
-
-    try {
-
-
-      console.log(
-        "⏳ Aplicando resultado final..."
-      );
-
-
-
-      await newMember.fetch();
-
-
-
-      await atualizarHierarquia();
-
-
-
-      console.log(
-        "✅ Atualização concluída!"
-      );
-
-
-
-    } catch (erro) {
-
-
-      console.log(
-        "❌ Erro atualização cargo:",
-        erro
-      );
-
+        clearTimeout(timerHierarquia);
 
     }
 
 
 
-  },
-  5000
-  );
+    timerHierarquia = setTimeout(
+    async () => {
+
+
+        try {
+
+
+            console.log(
+                "⏳ Atualizando após mudança..."
+            );
+
+
+
+            await newMember.fetch();
+
+
+
+            await atualizarHierarquia(client);
+
+
+
+            console.log(
+                "✅ Atualização concluída!"
+            );
+
+
+
+        } catch (erro) {
+
+
+            console.log(
+                "❌ Erro atualização cargo:",
+                erro
+            );
+
+
+        }
+
+
+    },
+    5000
+    );
 
 
 });
@@ -353,7 +356,44 @@ client.on(
 
 
 // ===============================
-// INICIAR BOT
+// LOGIN
 // ===============================
+
+async function iniciarBot() {
+
+
+    try {
+
+
+        await client.login(TOKEN);
+
+
+
+        console.log(
+            "✅ Login realizado!"
+        );
+
+
+
+    } catch (erro) {
+
+
+        console.error(
+            "❌ Erro login:",
+            erro
+        );
+
+
+
+        process.exit(1);
+
+
+    }
+
+
+}
+
+
+
 
 iniciarBot();
