@@ -308,29 +308,6 @@ async () => {
   );
 
 
-
-  try {
-
-
-    await readyEvent.execute(client);
-
-
-
-  } catch (erro) {
-
-
-    console.log(
-      "❌ Erro no ready:",
-      erro
-    );
-
-
-  }
-
-
-
-
-
   await limparCanalHierarquia();
 
 
