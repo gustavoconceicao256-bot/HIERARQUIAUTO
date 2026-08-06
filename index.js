@@ -61,14 +61,26 @@ const client = new Client({
 
 
 
-
 console.log("========== DEBUG ENV ==========");
-console.log("TOKEN:", process.env.TOKEN);
+
+console.log("TOKEN REAL:");
+console.log(process.env.TOKEN);
+
 console.log("CLIENT_ID:", process.env.CLIENT_ID);
 console.log("GUILD_ID:", process.env.GUILD_ID);
+
+console.log("TAMANHO TOKEN:");
+console.log(process.env.TOKEN?.length);
+
 console.log("================================");
-console.log("TOKEN:", process.env.TOKEN?.substring(0, 20));
-console.log("TAMANHO:", process.env.TOKEN?.length);
+
+client.login(process.env.TOKEN)
+    .then(() => {
+        console.log("✅ Login realizado");
+    })
+    .catch((err) => {
+        console.error("❌ Erro login:", err);
+    });
 
 
 
