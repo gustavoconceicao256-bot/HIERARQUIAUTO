@@ -1,410 +1,285 @@
-import dotenv from "dotenv";
-dotenv.config();
+import { EmbedBuilder } from "discord.js";
+import fs from "fs";
+import path from "path";
+import { fileURLToPath } from "url";
+import config from "../config.js";
 
-import { Client, GatewayIntentBits } from "discord.js";
-import express from "express";
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
-
-import { atualizarHierarquia } from "./utils/atualizarHierarquia.js";
-
-
-
-
-// ===============================
-// SERVIDOR WEB KEEP ALIVE
-// ===============================
-
-const app = express();
-
-
-app.get("/", (req, res) => {
-
-    res.send("Bot de hierarquia online!");
-
-});
-
-
-const PORT = process.env.PORT || 3000;
-
-
-app.listen(PORT, () => {
-
-    console.log(
-        `🌐 Servidor web iniciado na porta ${PORT}`
-    );
-
-});
-
-
-
-
-// ===============================
-// CLIENT DISCORD
-// ===============================
-
-const client = new Client({
-
-    intents: [
-
-        GatewayIntentBits.Guilds,
-        GatewayIntentBits.GuildMembers
-
-    ]
-
-});
-
-
-
-
-// ===============================
-// TOKEN
-// ===============================
-
-const TOKEN = process.env.TOKEN?.trim();
-
-
-console.log("========== DEBUG TOKEN ==========");
-
-console.log(
-    "TOKEN EXISTE:",
-    !!TOKEN
+const arquivoMensagens = path.join(
+    __dirname,
+    "mensagensHierarquia.json"
 );
 
 
-console.log(
-    "TEM PONTO:",
-    TOKEN?.includes(".")
-);
+function lerMensagens() {
 
+    if (!fs.existsSync(arquivoMensagens)) {
+        return {};
+    }
 
-console.log(
-    "TAMANHO:",
-    TOKEN?.length
-);
+    try {
 
+        return JSON.parse(
+            fs.readFileSync(
+                arquivoMensagens,
+                "utf8"
+            )
+        );
 
-console.log(
-    "FINAL:",
-    TOKEN?.slice(-10)
-);
+    } catch {
 
+        return {};
 
-console.log("================================");
-
-
-
-if (!TOKEN) {
-
-    console.error(
-        "❌ TOKEN não encontrado!"
-    );
-
-    process.exit(1);
+    }
 
 }
 
 
 
+function salvarMensagens(dados) {
 
-
-// ===============================
-// CONTROLE DE ATUALIZAÇÃO
-// ===============================
-
-let atualizando = false;
-
-
-
-async function atualizar() {
-
-
-    if (atualizando) {
-
-        console.log(
-            "⏳ Atualização já em andamento"
-        );
-
-        return;
-
-    }
-
-
-    atualizando = true;
-
-
-    try {
-
-
-        console.log(
-            "♻️ Atualizando hierarquia..."
-        );
-
-
-        await atualizarHierarquia(client);
-
-
-        console.log(
-            "✅ Hierarquia atualizada!"
-        );
-
-
-    } catch (erro) {
-
-
-        console.error(
-            "❌ Erro atualizando hierarquia:",
-            erro
-        );
-
-
-    }
-
-
-    atualizando = false;
-
+    fs.writeFileSync(
+        arquivoMensagens,
+        JSON.stringify(dados, null, 2)
+    );
 
 }
 
 
 
+export async function atualizarHierarquia(client) {
+
+    const canal = await client.channels.fetch(
+        config.canalId
+    );
+
+
+    await canal.guild.roles.fetch();
+
+
+    const mensagensSalvas = lerMensagens();
+
+
+    const membros = await canal.guild.members.fetch({
+        force: true
+    });
+
+
+    const listaCargos = {};
+
+
+    config.cargos.forEach(cargo => {
+
+        listaCargos[cargo.id] = [];
+
+    });
 
 
 
+    membros.forEach(member => {
 
-// ===============================
-// LIMPAR CANAL
-// ===============================
-
-async function limparCanalHierarquia() {
+        let maior = -1;
+        let cargoEscolhido = null;
 
 
-    try {
+        config.cargos.forEach(cargo => {
 
 
-        const canal = await client.channels.fetch(
-            "1527420188503576629"
-        );
+            const role =
+            canal.guild.roles.cache.get(
+                cargo.id
+            );
 
 
-        console.log(
-            "🧹 Limpando canal..."
-        );
+            if (!role) return;
 
 
 
-        let mensagens;
+            if (member.roles.cache.has(cargo.id)) {
 
 
-        do {
+                if (role.position > maior) {
 
+                    maior = role.position;
+                    cargoEscolhido = cargo;
 
-            mensagens = await canal.messages.fetch({
-
-                limit:100
-
-            });
-
-
-
-            for (const msg of mensagens.values()) {
-
-
-                try {
-
-                    await msg.delete();
-
-                } catch {}
+                }
 
             }
 
 
-
-        } while (mensagens.size > 0);
-
+        });
 
 
 
-        console.log(
-            "✅ Canal limpo!"
+        if (cargoEscolhido) {
+
+            listaCargos[cargoEscolhido.id]
+            .push(member);
+
+        }
+
+
+    });
+
+
+
+
+    for (const cargo of config.cargos) {
+
+
+        const role =
+        canal.guild.roles.cache.get(
+            cargo.id
+        );
+
+
+        if (!role) continue;
+
+
+
+        const membrosCargo =
+        listaCargos[cargo.id];
+
+
+
+        const lista =
+        membrosCargo.length > 0
+
+        ?
+
+        membrosCargo
+        .map(member => `• <@${member.id}>`)
+        .join("\n")
+
+        :
+
+        "Sem membros";
+
+
+
+        const horario =
+        new Date()
+        .toLocaleTimeString(
+            "pt-BR",
+            {
+                timeZone:
+                "America/Sao_Paulo",
+
+                hour:"2-digit",
+                minute:"2-digit"
+            }
         );
 
 
 
-    } catch (erro) {
+        const embed =
+        new EmbedBuilder()
 
+        .setTitle(
+            `🏷️ ${cargo.nome}`
+        )
 
-        console.error(
-            "❌ Erro limpando canal:",
-            erro
-        );
+        .setDescription(
+            lista
+        )
 
+        .setColor(
+            role.color || "#2b2d31"
+        )
 
-    }
+        .setFooter({
+            text:
+            `♻️ Atualizado Automaticamente | ${horario}`
+        })
 
+        .setTimestamp();
 
-}
 
 
+        const dadosMensagem = {
 
+            content:
+            `# ${role} - [${membrosCargo.length}] membros`,
 
 
+            allowedMentions: {
 
+                roles:[
+                    role.id
+                ],
 
-// ===============================
-// BOT ONLINE
-// ===============================
+                users:
+                membrosCargo.map(
+                    m => m.id
+                )
 
-client.once(
-"ready",
-async () => {
+            },
 
 
-    console.log(
-        `✅ ${client.user.tag} está online!`
-    );
+            embeds:[
+                embed
+            ]
 
+        };
 
 
-    await limparCanalHierarquia();
 
+        if (mensagensSalvas[cargo.id]) {
 
 
-    await atualizar();
+            try {
 
 
+                const mensagem =
+                await canal.messages.fetch(
+                    mensagensSalvas[cargo.id]
+                );
 
 
-    setInterval(async () => {
+                await mensagem.edit(
+                    dadosMensagem
+                );
 
 
-        console.log(
-            "🔍 Checagem automática..."
-        );
+                continue;
 
 
-        await atualizar();
+            } catch {
 
 
+                delete mensagensSalvas[cargo.id];
 
-    },60000);
-
-
-
-});
-
-
-
-
-
-
-
-// ===============================
-// MUDANÇA DE CARGO
-// ===============================
-
-let timerHierarquia = null;
-
-
-
-client.on(
-"guildMemberUpdate",
-(oldMember,newMember)=>{
-
-
-    console.log(
-        "🔄 Mudança de cargo detectada!"
-    );
-
-
-
-    if(timerHierarquia){
-
-        clearTimeout(timerHierarquia);
-
-    }
-
-
-
-    timerHierarquia = setTimeout(async()=>{
-
-
-        try{
-
-
-            await newMember.fetch();
-
-
-            await atualizar();
-
-
-
-            console.log(
-                "✅ Atualização por cargo concluída!"
-            );
-
-
-        }catch(erro){
-
-
-            console.error(
-                "❌ Erro atualização cargo:",
-                erro
-            );
+            }
 
 
         }
 
 
-    },5000);
 
-
-
-});
-
-
-
-
-
-
-
-
-// ===============================
-// LOGIN
-// ===============================
-
-async function iniciarBot(){
-
-
-    try{
-
-
-        await client.login(TOKEN);
-
-
-
-        console.log(
-            "✅ Login realizado!"
+        const novaMensagem =
+        await canal.send(
+            dadosMensagem
         );
 
 
-
-    }catch(erro){
-
-
-        console.error(
-            "❌ Erro login:",
-            erro
-        );
-
-
-        process.exit(1);
+        mensagensSalvas[cargo.id] =
+        novaMensagem.id;
 
 
     }
 
 
+
+    salvarMensagens(
+        mensagensSalvas
+    );
+
+
+    console.log(
+        "♻️ Hierarquia sincronizada!"
+    );
+
 }
-
-
-
-iniciarBot();
