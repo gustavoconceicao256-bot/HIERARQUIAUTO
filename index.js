@@ -6,12 +6,12 @@ import express from "express";
 
 import "./utils/keepalive/keepalive.js";
 
-
+import readyEvent from "./events/ready.js";
+import { atualizarHierarquia as executarHierarquia } from "./utils/atualizarHierarquia.js";
 
 
 
 const app = express();
-
 
 
 app.get("/", (req, res) => {
@@ -21,9 +21,7 @@ app.get("/", (req, res) => {
 });
 
 
-
 const PORT = process.env.PORT || 3000;
-
 
 
 app.listen(PORT, () => {
@@ -33,10 +31,6 @@ app.listen(PORT, () => {
   );
 
 });
-
-
-
-
 
 
 
@@ -56,17 +50,21 @@ const client = new Client({
 
 
 
+
 console.log("========== DEBUG TOKEN ==========");
 
-console.log("TOKEN EXISTE:", !!process.env.TOKEN);
+console.log(
+  "TOKEN EXISTE:",
+  !!process.env.TOKEN
+);
 
 console.log(
-  "COMEÇO TOKEN:",
+  "COMEÇO:",
   process.env.TOKEN?.substring(0, 10)
 );
 
 console.log(
-  "FINAL TOKEN:",
+  "FINAL:",
   process.env.TOKEN?.substring(
     process.env.TOKEN.length - 10
   )
@@ -80,17 +78,24 @@ console.log(
 console.log("================================");
 
 
+
+
+
 client.login(process.env.TOKEN)
-  .then(() => {
 
-    console.log("✅ Login realizado");
+.then(() => {
 
-  })
-  .catch((err) => {
+  console.log("✅ Login realizado");
 
-    console.error("❌ Erro login:", err);
+})
 
-  });
+.catch((err) => {
+
+  console.error("❌ Erro login:", err);
+
+});
+
+
 
 
 
@@ -101,18 +106,14 @@ let atualizando = false;
 
 
 
-
-
 async function atualizarHierarquia() {
 
 
   if (atualizando) {
 
-
     console.log(
       "⏳ Atualização já em andamento."
     );
-
 
     return;
 
@@ -132,7 +133,6 @@ async function atualizarHierarquia() {
     );
 
 
-
     await executarHierarquia(client);
 
 
@@ -140,7 +140,6 @@ async function atualizarHierarquia() {
     console.log(
       "✅ Hierarquia atualizada!"
     );
-
 
 
   } catch (erro) {
@@ -160,6 +159,7 @@ async function atualizarHierarquia() {
 
 
 }
+
 
 
 
@@ -194,12 +194,9 @@ async function limparCanalHierarquia() {
     do {
 
 
-
       mensagens = await canal.messages.fetch({
         limit: 100
       });
-
-
 
 
 
@@ -208,10 +205,7 @@ async function limparCanalHierarquia() {
 
         try {
 
-
           await msg.delete();
-
-
 
         } catch {}
 
@@ -219,10 +213,7 @@ async function limparCanalHierarquia() {
 
 
 
-
-
     } while (mensagens.size > 0);
-
 
 
 
@@ -287,10 +278,7 @@ client.once("ready", async () => {
 
 
 
-
   await limparCanalHierarquia();
-
-
 
 
 
@@ -301,15 +289,12 @@ client.once("ready", async () => {
 
 
 
-
   setInterval(async () => {
-
 
 
     console.log(
       "🔍 Checagem automática..."
     );
-
 
 
     await atualizarHierarquia();
@@ -335,84 +320,77 @@ client.once("ready", async () => {
 
 // ATUALIZA QUANDO MUDAR CARGO
 
+
 let timerHierarquia = null;
 
 
 
-
-
 client.on(
-"guildMemberUpdate",
-(oldMember, newMember) => {
+  "guildMemberUpdate",
+  (oldMember, newMember) => {
 
 
 
-  console.log(
-    "🔄 Mudança de cargo detectada!"
-  );
+    console.log(
+      "🔄 Mudança de cargo detectada!"
+    );
 
 
 
+    if (timerHierarquia) {
 
-  if (timerHierarquia) {
-
-
-    clearTimeout(timerHierarquia);
-
-
-  }
-
-
-
-
-
-
-  timerHierarquia = setTimeout(async () => {
-
-
-
-    try {
-
-
-
-      console.log(
-        "⏳ Aplicando resultado final..."
-      );
-
-
-
-      await newMember.fetch();
-
-
-
-      await atualizarHierarquia();
-
-
-
-      console.log(
-        "✅ Atualização concluída!"
-      );
-
-
-
-    } catch (erro) {
-
-
-
-      console.log(
-        "❌ Erro atualização cargo:",
-        erro
-      );
-
+      clearTimeout(timerHierarquia);
 
     }
 
 
 
 
-
-  }, 5000);
-
+    timerHierarquia = setTimeout(async () => {
 
 
-});
+
+      try {
+
+
+
+        console.log(
+          "⏳ Aplicando resultado final..."
+        );
+
+
+
+        await newMember.fetch();
+
+
+
+        await atualizarHierarquia();
+
+
+
+        console.log(
+          "✅ Atualização concluída!"
+        );
+
+
+
+      } catch (erro) {
+
+
+        console.log(
+          "❌ Erro atualização cargo:",
+          erro
+        );
+
+
+      }
+
+
+
+
+    }, 5000);
+
+
+
+  }
+);
