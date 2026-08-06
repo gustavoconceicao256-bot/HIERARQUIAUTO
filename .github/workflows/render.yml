@@ -4,10 +4,12 @@ on:
   schedule:
     - cron: "0 */2 * * *"
 
+  workflow_dispatch:
+
 jobs:
   deploy:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Chamar Deploy Hook
+      - name: Chamar Deploy Hook Render
         run: curl "${{ secrets.RENDER_HOOK }}"
