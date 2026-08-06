@@ -70,8 +70,8 @@ console.log(
 );
 
 console.log(
-  "COMEÇO:",
-  TOKEN?.substring(0, 10)
+  "TEM PONTO:",
+  TOKEN.includes(".")
 );
 
 console.log(
