@@ -6,10 +6,12 @@ import express from "express";
 
 import "./utils/keepalive/keepalive.js";
 
-import readyEvent from "./events/ready.js";
-import { atualizarHierarquia as executarHierarquia } from "./utils/atualizarHierarquia.js";
 
 
+
+// ===============================
+// SERVIDOR WEB KEEP ALIVE
+// ===============================
 
 const app = express();
 
@@ -35,6 +37,9 @@ app.listen(PORT, () => {
 
 
 
+// ===============================
+// CLIENT DISCORD
+// ===============================
 
 const client = new Client({
 
@@ -50,57 +55,90 @@ const client = new Client({
 
 
 
+// ===============================
+// TOKEN
+// ===============================
+
+const TOKEN = process.env.TOKEN?.trim();
+
 
 console.log("========== DEBUG TOKEN ==========");
 
 console.log(
   "TOKEN EXISTE:",
-  !!process.env.TOKEN
+  !!TOKEN
 );
 
 console.log(
   "COMEÇO:",
-  process.env.TOKEN?.substring(0, 10)
+  TOKEN?.substring(0, 10)
 );
 
 console.log(
   "FINAL:",
-  process.env.TOKEN?.substring(
-    process.env.TOKEN.length - 10
+  TOKEN?.substring(
+    TOKEN.length - 10
   )
 );
 
 console.log(
   "TAMANHO:",
-  process.env.TOKEN?.length
+  TOKEN?.length
 );
 
 console.log("================================");
 
 
 
+if (!TOKEN) {
 
+  console.error(
+    "❌ TOKEN não encontrado no .env!"
+  );
 
-client.login(process.env.TOKEN)
+  process.exit(1);
 
-.then(() => {
-
-  console.log("✅ Login realizado");
-
-})
-
-.catch((err) => {
-
-  console.error("❌ Erro login:", err);
-
-});
+}
 
 
 
 
 
+// ===============================
+// LOGIN DISCORD
+// ===============================
+
+async function iniciarBot(){
+
+  try {
+
+    await client.login(TOKEN);
+
+    console.log(
+      "✅ Login realizado!"
+    );
 
 
+  } catch (erro) {
+
+    console.error(
+      "❌ Erro login:",
+      erro
+    );
+
+    process.exit(1);
+
+  }
+
+}
+
+
+
+
+
+// ===============================
+// CONTROLE HIERARQUIA
+// ===============================
 
 let atualizando = false;
 
@@ -111,9 +149,11 @@ async function atualizarHierarquia() {
 
   if (atualizando) {
 
+
     console.log(
       "⏳ Atualização já em andamento."
     );
+
 
     return;
 
@@ -133,6 +173,7 @@ async function atualizarHierarquia() {
     );
 
 
+
     await executarHierarquia(client);
 
 
@@ -140,6 +181,7 @@ async function atualizarHierarquia() {
     console.log(
       "✅ Hierarquia atualizada!"
     );
+
 
 
   } catch (erro) {
@@ -166,8 +208,9 @@ async function atualizarHierarquia() {
 
 
 
-
-
+// ===============================
+// LIMPAR CANAL
+// ===============================
 
 async function limparCanalHierarquia() {
 
@@ -195,7 +238,9 @@ async function limparCanalHierarquia() {
 
 
       mensagens = await canal.messages.fetch({
+
         limit: 100
+
       });
 
 
@@ -205,15 +250,20 @@ async function limparCanalHierarquia() {
 
         try {
 
+
           await msg.delete();
 
+
         } catch {}
+
+
 
       }
 
 
 
     } while (mensagens.size > 0);
+
 
 
 
@@ -244,10 +294,13 @@ async function limparCanalHierarquia() {
 
 
 
+// ===============================
+// BOT ONLINE
+// ===============================
 
-
-client.once("ready", async () => {
-
+client.once(
+"ready",
+async () => {
 
 
   console.log(
@@ -288,7 +341,6 @@ client.once("ready", async () => {
 
 
 
-
   setInterval(async () => {
 
 
@@ -313,84 +365,91 @@ client.once("ready", async () => {
 
 
 
-
-
-
-
-
+// ===============================
 // ATUALIZA QUANDO MUDAR CARGO
-
+// ===============================
 
 let timerHierarquia = null;
 
 
 
 client.on(
-  "guildMemberUpdate",
-  (oldMember, newMember) => {
+"guildMemberUpdate",
+(oldMember, newMember) => {
 
 
 
-    console.log(
-      "🔄 Mudança de cargo detectada!"
-    );
+  console.log(
+    "🔄 Mudança de cargo detectada!"
+  );
 
 
 
-    if (timerHierarquia) {
+  if (timerHierarquia) {
 
-      clearTimeout(timerHierarquia);
+    clearTimeout(timerHierarquia);
+
+  }
+
+
+
+
+
+  timerHierarquia = setTimeout(
+  async () => {
+
+
+
+    try {
+
+
+      console.log(
+        "⏳ Aplicando resultado final..."
+      );
+
+
+
+      await newMember.fetch();
+
+
+
+      await atualizarHierarquia();
+
+
+
+      console.log(
+        "✅ Atualização concluída!"
+      );
+
+
+
+    } catch (erro) {
+
+
+      console.log(
+        "❌ Erro atualização cargo:",
+        erro
+      );
+
 
     }
 
 
 
-
-    timerHierarquia = setTimeout(async () => {
-
-
-
-      try {
+  },
+  5000
+  );
 
 
-
-        console.log(
-          "⏳ Aplicando resultado final..."
-        );
-
-
-
-        await newMember.fetch();
-
-
-
-        await atualizarHierarquia();
-
-
-
-        console.log(
-          "✅ Atualização concluída!"
-        );
-
-
-
-      } catch (erro) {
-
-
-        console.log(
-          "❌ Erro atualização cargo:",
-          erro
-        );
-
-
-      }
+});
 
 
 
 
-    }, 5000);
 
 
+// ===============================
+// INICIAR BOT
+// ===============================
 
-  }
-);
+iniciarBot();
