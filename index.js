@@ -7,8 +7,7 @@ import express from "express";
 
 import "./utils/keepalive/keepalive.js";
 
-import { atualizarHierarquia as executarHierarquia } from "./utils/atualizarHierarquia.js";
-
+import { atualizarHierarquia } from "./utils/atualizarHierarquia.js";
 
 
 // ===============================
@@ -133,79 +132,6 @@ async function iniciarBot(){
   }
 
 }
-
-
-
-
-
-// ===============================
-// CONTROLE HIERARQUIA
-// ===============================
-
-let atualizando = false;
-
-
-
-async function atualizarHierarquia() {
-
-
-  if (atualizando) {
-
-
-    console.log(
-      "⏳ Atualização já em andamento."
-    );
-
-
-    return;
-
-  }
-
-
-
-  atualizando = true;
-
-
-
-  try {
-
-
-    console.log(
-      "♻️ Atualizando hierarquia..."
-    );
-
-
-
-await executarHierarquia(client);
-    
-
-    console.log(
-      "✅ Hierarquia atualizada!"
-    );
-
-
-
-  } catch (erro) {
-
-
-    console.log(
-      "❌ Erro na hierarquia:",
-      erro
-    );
-
-
-  }
-
-
-
-  atualizando = false;
-
-
-}
-
-
-
-
 
 
 
