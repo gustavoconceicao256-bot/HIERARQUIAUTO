@@ -1,14 +1,10 @@
-import { Client, GatewayIntentBits } from "discord.js";
 import dotenv from "dotenv";
+dotenv.config();
+
+import { Client, GatewayIntentBits } from "discord.js";
 import express from "express";
 
 import "./utils/keepalive/keepalive.js";
-
-import readyEvent from "./events/ready.js";
-import { atualizarHierarquia as executarHierarquia } from "./utils/atualizarHierarquia.js";
-
-
-dotenv.config();
 
 
 
@@ -51,7 +47,6 @@ const client = new Client({
   intents: [
 
     GatewayIntentBits.Guilds,
-
     GatewayIntentBits.GuildMembers
 
   ]
@@ -63,25 +58,28 @@ const client = new Client({
 
 console.log("========== DEBUG ENV ==========");
 
-console.log("TOKEN REAL:");
-console.log(process.env.TOKEN);
+console.log("TOKEN EXISTE:", !!process.env.TOKEN);
 
 console.log("CLIENT_ID:", process.env.CLIENT_ID);
 console.log("GUILD_ID:", process.env.GUILD_ID);
 
-console.log("TAMANHO TOKEN:");
-console.log(process.env.TOKEN?.length);
+console.log("TAMANHO TOKEN:", process.env.TOKEN?.length);
 
 console.log("================================");
 
-client.login(process.env.TOKEN)
-    .then(() => {
-        console.log("✅ Login realizado");
-    })
-    .catch((err) => {
-        console.error("❌ Erro login:", err);
-    });
 
+
+client.login(process.env.TOKEN)
+  .then(() => {
+
+    console.log("✅ Login realizado");
+
+  })
+  .catch((err) => {
+
+    console.error("❌ Erro login:", err);
+
+  });
 
 
 
@@ -293,8 +291,6 @@ client.once("ready", async () => {
 
 
 
-  // SCAN AUTOMÁTICO DA HIERARQUIA
-
   setInterval(async () => {
 
 
@@ -409,15 +405,3 @@ client.on(
 
 
 });
-
-
-
-
-
-
-
-
-
-client.login(
-  process.env.TOKEN
-);
