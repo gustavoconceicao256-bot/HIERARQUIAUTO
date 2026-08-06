@@ -56,17 +56,28 @@ const client = new Client({
 
 
 
-console.log("========== DEBUG ENV ==========");
+console.log("========== DEBUG TOKEN ==========");
 
 console.log("TOKEN EXISTE:", !!process.env.TOKEN);
 
-console.log("CLIENT_ID:", process.env.CLIENT_ID);
-console.log("GUILD_ID:", process.env.GUILD_ID);
+console.log(
+  "COMEÇO TOKEN:",
+  process.env.TOKEN?.substring(0, 10)
+);
 
-console.log("TAMANHO TOKEN:", process.env.TOKEN?.length);
+console.log(
+  "FINAL TOKEN:",
+  process.env.TOKEN?.substring(
+    process.env.TOKEN.length - 10
+  )
+);
+
+console.log(
+  "TAMANHO:",
+  process.env.TOKEN?.length
+);
 
 console.log("================================");
-
 
 
 client.login(process.env.TOKEN)
