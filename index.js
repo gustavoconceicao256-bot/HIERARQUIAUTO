@@ -1,3 +1,4 @@
+
 import dotenv from "dotenv";
 dotenv.config();
 
@@ -6,6 +7,8 @@ import express from "express";
 
 import "./utils/keepalive/keepalive.js";
 
+import readyEvent from "./events/ready.js";
+import executarHierarquia from "./utils/atualizarHierarquia.js";
 
 
 
