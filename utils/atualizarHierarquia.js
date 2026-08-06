@@ -4,8 +4,11 @@ import path from "path";
 import { fileURLToPath } from "url";
 import config from "../config.js";
 
+
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
+
+
 
 const arquivoMensagens = path.join(
     __dirname,
@@ -13,13 +16,22 @@ const arquivoMensagens = path.join(
 );
 
 
+
+
+
 function lerMensagens() {
 
+
     if (!fs.existsSync(arquivoMensagens)) {
+
         return {};
+
     }
 
+
+
     try {
+
 
         return JSON.parse(
             fs.readFileSync(
@@ -28,101 +40,234 @@ function lerMensagens() {
             )
         );
 
+
     } catch {
+
 
         return {};
 
+
     }
 
+
 }
+
+
+
+
 
 
 
 function salvarMensagens(dados) {
 
+
     fs.writeFileSync(
         arquivoMensagens,
-        JSON.stringify(dados, null, 2)
+        JSON.stringify(
+            dados,
+            null,
+            2
+        )
     );
+
 
 }
 
 
 
+
+
+
+
+
+
 export async function atualizarHierarquia(client) {
+
+
+
+    if (!client) {
+
+
+        console.log(
+            "❌ Client Discord não foi enviado!"
+        );
+
+
+        return;
+
+
+    }
+
+
+
+
+
+
 
     const canal = await client.channels.fetch(
         config.canalId
     );
 
 
-    await canal.guild.roles.fetch();
+
+    if (!canal) {
 
 
-    const mensagensSalvas = lerMensagens();
+        console.log(
+            "❌ Canal da hierarquia não encontrado!"
+        );
 
 
-    const membros = await canal.guild.members.fetch({
-        force: true
+        return;
+
+
+    }
+
+
+
+
+
+
+
+    const guild = canal.guild;
+
+
+
+    await guild.roles.fetch();
+
+
+
+
+
+    const mensagensSalvas =
+    lerMensagens();
+
+
+
+
+
+
+    const membros =
+    await guild.members.fetch({
+        force:true
     });
+
+
+
+
+
+
 
 
     const listaCargos = {};
 
 
+
+
     config.cargos.forEach(cargo => {
 
+
         listaCargos[cargo.id] = [];
+
 
     });
 
 
 
+
+
+
+
+
+
     membros.forEach(member => {
 
+
+
         let maior = -1;
+
         let cargoEscolhido = null;
+
+
+
 
 
         config.cargos.forEach(cargo => {
 
 
+
             const role =
-            canal.guild.roles.cache.get(
+            guild.roles.cache.get(
                 cargo.id
             );
+
 
 
             if (!role) return;
 
 
 
-            if (member.roles.cache.has(cargo.id)) {
 
 
-                if (role.position > maior) {
 
-                    maior = role.position;
-                    cargoEscolhido = cargo;
+
+            if (
+                member.roles.cache.has(
+                    cargo.id
+                )
+            ) {
+
+
+
+                if (
+                    role.position > maior
+                ) {
+
+
+                    maior =
+                    role.position;
+
+
+                    cargoEscolhido =
+                    cargo;
+
 
                 }
 
+
             }
+
 
 
         });
 
 
 
+
+
+
+
+
         if (cargoEscolhido) {
 
-            listaCargos[cargoEscolhido.id]
-            .push(member);
+
+            listaCargos[
+                cargoEscolhido.id
+            ].push(member);
+
 
         }
 
 
+
+
+
     });
+
+
+
+
+
 
 
 
@@ -130,18 +275,26 @@ export async function atualizarHierarquia(client) {
     for (const cargo of config.cargos) {
 
 
+
         const role =
-        canal.guild.roles.cache.get(
+        guild.roles.cache.get(
             cargo.id
         );
+
 
 
         if (!role) continue;
 
 
 
+
+
         const membrosCargo =
         listaCargos[cargo.id];
+
+
+
+
 
 
 
@@ -151,12 +304,22 @@ export async function atualizarHierarquia(client) {
         ?
 
         membrosCargo
-        .map(member => `• <@${member.id}>`)
+        .map(
+            member =>
+            `• <@${member.id}>`
+        )
         .join("\n")
+
 
         :
 
         "Sem membros";
+
+
+
+
+
+
 
 
 
@@ -165,72 +328,120 @@ export async function atualizarHierarquia(client) {
         .toLocaleTimeString(
             "pt-BR",
             {
+
                 timeZone:
                 "America/Sao_Paulo",
 
                 hour:"2-digit",
+
                 minute:"2-digit"
+
             }
         );
+
+
+
+
+
+
+
 
 
 
         const embed =
         new EmbedBuilder()
 
+
         .setTitle(
             `🏷️ ${cargo.nome}`
         )
+
 
         .setDescription(
             lista
         )
 
+
         .setColor(
             role.color || "#2b2d31"
         )
 
+
         .setFooter({
+
             text:
             `♻️ Atualizado Automaticamente | ${horario}`
+
         })
+
 
         .setTimestamp();
 
 
 
+
+
+
+
+
+
         const dadosMensagem = {
+
+
 
             content:
             `# ${role} - [${membrosCargo.length}] membros`,
 
 
-            allowedMentions: {
+
+
+
+            allowedMentions:{
+
 
                 roles:[
                     role.id
                 ],
+
 
                 users:
                 membrosCargo.map(
                     m => m.id
                 )
 
+
             },
 
 
+
+
+
             embeds:[
+
                 embed
+
             ]
+
+
 
         };
 
 
 
-        if (mensagensSalvas[cargo.id]) {
+
+
+
+
+
+
+        if (
+            mensagensSalvas[cargo.id]
+        ) {
+
 
 
             try {
+
 
 
                 const mensagem =
@@ -239,15 +450,21 @@ export async function atualizarHierarquia(client) {
                 );
 
 
+
+
                 await mensagem.edit(
                     dadosMensagem
                 );
 
 
+
+
                 continue;
 
 
+
             } catch {
+
 
 
                 delete mensagensSalvas[cargo.id];
@@ -259,17 +476,35 @@ export async function atualizarHierarquia(client) {
 
 
 
+
+
+
+
+
+
         const novaMensagem =
         await canal.send(
             dadosMensagem
         );
 
 
+
+
+
         mensagensSalvas[cargo.id] =
         novaMensagem.id;
 
 
+
+
+
     }
+
+
+
+
+
+
 
 
 
@@ -278,8 +513,14 @@ export async function atualizarHierarquia(client) {
     );
 
 
+
+
+
+
     console.log(
         "♻️ Hierarquia sincronizada!"
     );
+
+
 
 }
