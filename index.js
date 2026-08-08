@@ -53,49 +53,14 @@ const client = new Client({
 
 
 // ===============================
-// TOKEN
-// ===============================
-
+// TOKEN 
+// =============================== 
 const TOKEN = process.env.TOKEN?.trim();
 
-
-console.log("========== DEBUG TOKEN ==========");
-
-console.log(
-    "TOKEN EXISTE:",
-    !!TOKEN
-);
-
-console.log(
-    "TEM PONTO:",
-    TOKEN?.includes(".")
-);
-
-console.log(
-    "FINAL:",
-    TOKEN?.slice(-10)
-);
-
-console.log(
-    "TAMANHO:",
-    TOKEN?.length
-);
-
-console.log("================================");
-
-
-
-if (!TOKEN) {
-
-    console.error(
-        "❌ TOKEN não encontrado!"
-    );
-
-    process.exit(1);
-
-}
-
-
+if (!TOKEN) { console.error("❌ TOKEN não encontrado!");
+             
+             process.exit(1); } 
+console.log("🔑 TOKEN carregado com sucesso!");
 
 
 // ===============================
