@@ -15,7 +15,9 @@ import { atualizarHierarquia } from "./utils/atualizarHierarquia.js";
 const app = express();
 
 const PORT = process.env.PORT || 10000;
-const TOKEN = process.env.TOKEN ? process.env.TOKEN.trim() : "";
+const TOKEN = process.env.TOKEN
+    ? process.env.TOKEN.trim()
+    : "";
 
 const CANAL_HIERARQUIA = "1527420188503576629";
 
@@ -39,7 +41,9 @@ app.get("/", (req, res) => {
 });
 
 app.listen(PORT, "0.0.0.0", () => {
-    console.log("Servidor web iniciado na porta " + PORT);
+    console.log(
+        "Servidor web iniciado na porta " + PORT
+    );
 });
 
 // ========================================
@@ -69,7 +73,9 @@ async function limparCanalHierarquia() {
         }
 
         if (!canal.isTextBased()) {
-            console.log("O canal nao e um canal de texto!");
+            console.log(
+                "O canal nao e um canal de texto!"
+            );
             return;
         }
 
@@ -109,19 +115,26 @@ async function limparCanalHierarquia() {
 }
 
 // ========================================
-// BOT ONLINE
+// BOT PRONTO
 // ========================================
 
 client.once("ready", async () => {
 
-    console.log("================================");
+    console.log(
+        "================================"
+    );
+
     console.log(
         "BOT ONLINE: " + client.user.tag
     );
+
     console.log(
         "BOT ID: " + client.user.id
     );
-    console.log("================================");
+
+    console.log(
+        "================================"
+    );
 
     // ====================================
     // LIMPAR CANAL
