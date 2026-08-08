@@ -1,4 +1,4 @@
-```js
+```text
 import dotenv from "dotenv";
 dotenv.config();
 
