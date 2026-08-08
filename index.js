@@ -1,4 +1,3 @@
-```text
 import dotenv from "dotenv";
 dotenv.config();
 
@@ -6,7 +5,11 @@ import { Client, GatewayIntentBits } from "discord.js";
 import express from "express";
 
 import "./utils/keepalive/keepalive.js";
+
 import { atualizarHierarquia } from "./utils/atualizarHierarquia.js";
+
+import readyEvent from "./Eventos/ready.js";
+import guildMemberUpdateEvent from "./Eventos/guildMemberUpdate.js";
 
 // ======================================
 // SERVIDOR WEB
@@ -21,12 +24,11 @@ app.get("/", (req, res) => {
 const PORT = process.env.PORT || 3000;
 
 app.listen(PORT, () => {
-    console.log("Servidor web iniciado na porta " + PORT);
+    console.log(`🌐 Servidor web iniciado na porta ${PORT}`);
 });
 
 // ======================================
 // CLIENT DISCORD
-// TESTE: SOMENTE GUILDS
 // ======================================
 
 const client = new Client({
@@ -37,17 +39,36 @@ const client = new Client({
 });
 
 // ======================================
+// EVENTOS
+// ======================================
+
+client.once("ready", () => {
+    readyEvent.execute(client);
+});
+
+client.on("guildMemberUpdate", async (oldMember, newMember) => {
+    try {
+        await guildMemberUpdateEvent.execute(oldMember, newMember);
+    } catch (erro) {
+        console.error(
+            "❌ Erro no evento guildMemberUpdate:",
+            erro
+        );
+    }
+});
+
+// ======================================
 // TOKEN
 // ======================================
 
 const TOKEN = process.env.TOKEN?.trim();
 
 if (!TOKEN) {
-    console.error("TOKEN nao encontrado!");
+    console.error("❌ TOKEN não encontrado!");
     process.exit(1);
 }
 
-console.log("TOKEN carregado com sucesso!");
+console.log("🔑 TOKEN carregado com sucesso!");
 
 // ======================================
 // LIMPAR CANAL
@@ -62,11 +83,11 @@ async function limparCanalHierarquia() {
         );
 
         if (!canal) {
-            console.log("Canal nao encontrado!");
+            console.log("❌ Canal não encontrado!");
             return;
         }
 
-        console.log("Limpando canal...");
+        console.log("🧹 Limpando canal de hierarquia...");
 
         let mensagens;
 
@@ -81,19 +102,19 @@ async function limparCanalHierarquia() {
                 try {
                     await mensagem.delete();
                 } catch {
-                    // Ignorar erro de exclusao
+                    // Ignorar mensagens que não puderem ser apagadas
                 }
 
             }
 
         } while (mensagens.size > 0);
 
-        console.log("Canal limpo!");
+        console.log("✅ Canal limpo!");
 
     } catch (erro) {
 
         console.error(
-            "Erro limpando canal:",
+            "❌ Erro limpando canal:",
             erro
         );
 
@@ -107,12 +128,16 @@ async function limparCanalHierarquia() {
 client.once("ready", async () => {
 
     console.log(
-        "BOT ONLINE: " + client.user.tag
+        "🤖 BOT ONLINE: " + client.user.tag
     );
 
     console.log(
-        "BOT ID: " + client.user.id
+        "🆔 BOT ID: " + client.user.id
     );
+
+    // ==================================
+    // LIMPAR CANAL
+    // ==================================
 
     await limparCanalHierarquia();
 
@@ -125,26 +150,26 @@ client.once("ready", async () => {
         await atualizarHierarquia(client);
 
         console.log(
-            "Hierarquia enviada!"
+            "✅ Hierarquia enviada!"
         );
 
     } catch (erro) {
 
         console.error(
-            "Erro primeira hierarquia:",
+            "❌ Erro primeira hierarquia:",
             erro
         );
 
     }
 
     // ==================================
-    // ATUALIZACAO AUTOMATICA
+    // ATUALIZAÇÃO AUTOMÁTICA
     // ==================================
 
     setInterval(async () => {
 
         console.log(
-            "Checagem automatica..."
+            "🔄 Checagem automática..."
         );
 
         try {
@@ -152,13 +177,13 @@ client.once("ready", async () => {
             await atualizarHierarquia(client);
 
             console.log(
-                "Hierarquia atualizada!"
+                "✅ Hierarquia atualizada!"
             );
 
         } catch (erro) {
 
             console.error(
-                "Erro atualizacao automatica:",
+                "❌ Erro atualização automática:",
                 erro
             );
 
@@ -179,13 +204,13 @@ async function iniciarBot() {
         await client.login(TOKEN);
 
         console.log(
-            "Login realizado!"
+            "✅ Login realizado!"
         );
 
     } catch (erro) {
 
         console.error(
-            "Erro login:",
+            "❌ Erro login:",
             erro
         );
 
@@ -196,4 +221,3 @@ async function iniciarBot() {
 }
 
 iniciarBot();
-```
