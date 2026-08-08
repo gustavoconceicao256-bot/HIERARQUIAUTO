@@ -1,3 +1,4 @@
+```js
 import dotenv from "dotenv";
 dotenv.config();
 
@@ -5,11 +6,7 @@ import { Client, GatewayIntentBits } from "discord.js";
 import express from "express";
 
 import "./utils/keepalive/keepalive.js";
-
 import { atualizarHierarquia } from "./utils/atualizarHierarquia.js";
-
-import readyEvent from "./Eventos/ready.js";
-import guildMemberUpdateEvent from "./Eventos/guildMemberUpdate.js";
 
 // ======================================
 // SERVIDOR WEB
@@ -24,7 +21,7 @@ app.get("/", (req, res) => {
 const PORT = process.env.PORT || 3000;
 
 app.listen(PORT, () => {
-    console.log(`🌐 Servidor web iniciado na porta ${PORT}`);
+    console.log("🌐 Servidor web iniciado na porta " + PORT);
 });
 
 // ======================================
@@ -39,32 +36,13 @@ const client = new Client({
 });
 
 // ======================================
-// EVENTOS
-// ======================================
-
-client.once("ready", () => {
-    readyEvent.execute(client);
-});
-
-client.on("guildMemberUpdate", async (oldMember, newMember) => {
-    try {
-        await guildMemberUpdateEvent.execute(oldMember, newMember);
-    } catch (erro) {
-        console.error(
-            "❌ Erro no evento guildMemberUpdate:",
-            erro
-        );
-    }
-});
-
-// ======================================
 // TOKEN
 // ======================================
 
 const TOKEN = process.env.TOKEN?.trim();
 
 if (!TOKEN) {
-    console.error("❌ TOKEN não encontrado!");
+    console.error("❌ TOKEN nao encontrado!");
     process.exit(1);
 }
 
@@ -83,11 +61,11 @@ async function limparCanalHierarquia() {
         );
 
         if (!canal) {
-            console.log("❌ Canal não encontrado!");
+            console.log("❌ Canal nao encontrado!");
             return;
         }
 
-        console.log("🧹 Limpando canal de hierarquia...");
+        console.log("🧹 Limpando canal...");
 
         let mensagens;
 
@@ -100,9 +78,13 @@ async function limparCanalHierarquia() {
             for (const mensagem of mensagens.values()) {
 
                 try {
+
                     await mensagem.delete();
+
                 } catch {
-                    // Ignorar mensagens que não puderem ser apagadas
+
+                    // Ignorar erro de exclusao
+
                 }
 
             }
@@ -163,13 +145,13 @@ client.once("ready", async () => {
     }
 
     // ==================================
-    // ATUALIZAÇÃO AUTOMÁTICA
+    // ATUALIZACAO AUTOMATICA
     // ==================================
 
     setInterval(async () => {
 
         console.log(
-            "🔄 Checagem automática..."
+            "🔄 Checagem automatica..."
         );
 
         try {
@@ -183,7 +165,7 @@ client.once("ready", async () => {
         } catch (erro) {
 
             console.error(
-                "❌ Erro atualização automática:",
+                "❌ Erro atualizacao automatica:",
                 erro
             );
 
@@ -221,3 +203,4 @@ async function iniciarBot() {
 }
 
 iniciarBot();
+```
