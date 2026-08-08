@@ -2,25 +2,27 @@ import { EmbedBuilder } from "discord.js";
 import fs from "fs";
 import path from "path";
 import { fileURLToPath } from "url";
+
 import config from "../config.js";
 
+// ======================================
+// CAMINHOS
+// ======================================
 
 const __filename = fileURLToPath(import.meta.url);
+
 const __dirname = path.dirname(__filename);
-
-
 
 const arquivoMensagens = path.join(
     __dirname,
     "mensagensHierarquia.json"
 );
 
-
-
-
+// ======================================
+// LER MENSAGENS
+// ======================================
 
 function lerMensagens() {
-
 
     if (!fs.existsSync(arquivoMensagens)) {
 
@@ -28,10 +30,7 @@ function lerMensagens() {
 
     }
 
-
-
     try {
-
 
         return JSON.parse(
             fs.readFileSync(
@@ -40,26 +39,19 @@ function lerMensagens() {
             )
         );
 
-
     } catch {
-
 
         return {};
 
-
     }
-
 
 }
 
-
-
-
-
-
+// ======================================
+// SALVAR MENSAGENS
+// ======================================
 
 function salvarMensagens(dados) {
-
 
     fs.writeFileSync(
         arquivoMensagens,
@@ -70,457 +62,329 @@ function salvarMensagens(dados) {
         )
     );
 
-
 }
 
-
-
-
-
-
-
-
+// ======================================
+// ATUALIZAR HIERARQUIA
+// ======================================
 
 export async function atualizarHierarquia(client) {
 
-
-
     if (!client) {
-
 
         console.log(
             "❌ Client Discord não foi enviado!"
         );
 
-
         return;
-
 
     }
 
+    try {
 
+        // ==================================
+        // CANAL
+        // ==================================
 
-
-
-
-
-    const canal = await client.channels.fetch(
-        config.canalId
-    );
-
-
-
-    if (!canal) {
-
-
-        console.log(
-            "❌ Canal da hierarquia não encontrado!"
+        const canal = await client.channels.fetch(
+            config.canalId
         );
 
+        if (!canal) {
 
-        return;
+            console.log(
+                "❌ Canal da hierarquia não encontrado!"
+            );
 
+            return;
 
-    }
+        }
 
+        // ==================================
+        // SERVIDOR
+        // ==================================
 
+        const guild = canal.guild;
 
+        if (!guild) {
 
+            console.log(
+                "❌ Servidor não encontrado!"
+            );
 
+            return;
 
+        }
 
-    const guild = canal.guild;
+        // ==================================
+        // ATUALIZAR CARGOS
+        // ==================================
 
+        await guild.roles.fetch();
 
+        // ==================================
+        // MENSAGENS SALVAS
+        // ==================================
 
-    await guild.roles.fetch();
+        const mensagensSalvas =
+            lerMensagens();
 
+        // ==================================
+        // BUSCAR MEMBROS
+        // ==================================
 
+        console.log(
+            "👥 Buscando membros do servidor..."
+        );
 
+        const membros =
+            await guild.members.fetch({
+                force: true
+            });
 
+        console.log(
+            `👥 ${membros.size} membros encontrados.`
+        );
 
-    const mensagensSalvas =
-    lerMensagens();
+        // ==================================
+        // ORGANIZAR CARGOS
+        // ==================================
 
-
-
-
-
-
-    const membros =
-    await guild.members.fetch({
-        force:true
-    });
-
-
-
-
-
-
-
-
-    const listaCargos = {};
-
-
-
-
-    config.cargos.forEach(cargo => {
-
-
-        listaCargos[cargo.id] = [];
-
-
-    });
-
-
-
-
-
-
-
-
-
-    membros.forEach(member => {
-
-
-
-        let maior = -1;
-
-        let cargoEscolhido = null;
-
-
-
-
+        const listaCargos = {};
 
         config.cargos.forEach(cargo => {
 
-
-
-            const role =
-            guild.roles.cache.get(
-                cargo.id
-            );
-
-
-
-            if (!role) return;
-
-
-
-
-
-
-
-            if (
-                member.roles.cache.has(
-                    cargo.id
-                )
-            ) {
-
-
-
-                if (
-                    role.position > maior
-                ) {
-
-
-                    maior =
-                    role.position;
-
-
-                    cargoEscolhido =
-                    cargo;
-
-
-                }
-
-
-            }
-
-
+            listaCargos[cargo.id] = [];
 
         });
 
+        // ==================================
+        // IDENTIFICAR MAIOR CARGO
+        // ==================================
 
+        membros.forEach(member => {
 
+            let maior = -1;
 
+            let cargoEscolhido = null;
 
+            config.cargos.forEach(cargo => {
 
+                const role =
+                    guild.roles.cache.get(
+                        cargo.id
+                    );
 
+                if (!role) return;
 
-        if (cargoEscolhido) {
+                if (
+                    member.roles.cache.has(
+                        cargo.id
+                    )
+                ) {
 
+                    if (
+                        role.position > maior
+                    ) {
 
-            listaCargos[
-                cargoEscolhido.id
-            ].push(member);
+                        maior =
+                            role.position;
 
+                        cargoEscolhido =
+                            cargo;
 
-        }
+                    }
 
+                }
 
+            });
 
+            if (cargoEscolhido) {
 
-
-    });
-
-
-
-
-
-
-
-
-
-    for (const cargo of config.cargos) {
-
-
-
-        const role =
-        guild.roles.cache.get(
-            cargo.id
-        );
-
-
-
-        if (!role) continue;
-
-
-
-
-
-        const membrosCargo =
-        listaCargos[cargo.id];
-
-
-
-
-
-
-
-        const lista =
-        membrosCargo.length > 0
-
-        ?
-
-        membrosCargo
-        .map(
-            member =>
-            `• <@${member.id}>`
-        )
-        .join("\n")
-
-
-        :
-
-        "Sem membros";
-
-
-
-
-
-
-
-
-
-        const horario =
-        new Date()
-        .toLocaleTimeString(
-            "pt-BR",
-            {
-
-                timeZone:
-                "America/Sao_Paulo",
-
-                hour:"2-digit",
-
-                minute:"2-digit"
+                listaCargos[
+                    cargoEscolhido.id
+                ].push(member);
 
             }
-        );
 
+        });
 
+        // ==================================
+        // ATUALIZAR CADA CARGO
+        // ==================================
 
+        for (const cargo of config.cargos) {
 
-
-
-
-
-
-
-        const embed =
-        new EmbedBuilder()
-
-
-        .setTitle(
-            `🏷️ ${cargo.nome}`
-        )
-
-
-        .setDescription(
-            lista
-        )
-
-
-        .setColor(
-            role.color || "#2b2d31"
-        )
-
-
-        .setFooter({
-
-            text:
-            `♻️ Atualizado Automaticamente | ${horario}`
-
-        })
-
-
-        .setTimestamp();
-
-
-
-
-
-
-
-
-
-        const dadosMensagem = {
-
-
-
-            content:
-            `# ${role} - [${membrosCargo.length}] membros`,
-
-
-
-
-
-            allowedMentions:{
-
-
-                roles:[
-                    role.id
-                ],
-
-
-                users:
-                membrosCargo.map(
-                    m => m.id
-                )
-
-
-            },
-
-
-
-
-
-            embeds:[
-
-                embed
-
-            ]
-
-
-
-        };
-
-
-
-
-
-
-
-
-
-        if (
-            mensagensSalvas[cargo.id]
-        ) {
-
-
-
-            try {
-
-
-
-                const mensagem =
-                await canal.messages.fetch(
-                    mensagensSalvas[cargo.id]
+            const role =
+                guild.roles.cache.get(
+                    cargo.id
                 );
 
+            if (!role) {
 
-
-
-                await mensagem.edit(
-                    dadosMensagem
+                console.log(
+                    `⚠️ Cargo não encontrado: ${cargo.nome}`
                 );
-
-
-
 
                 continue;
 
+            }
 
+            const membrosCargo =
+                listaCargos[cargo.id];
 
-            } catch {
+            const lista =
+                membrosCargo.length > 0
 
+                    ? membrosCargo
+                        .map(
+                            member =>
+                                `• <@${member.id}>`
+                        )
+                        .join("\n")
 
+                    : "Sem membros";
 
-                delete mensagensSalvas[cargo.id];
+            // ==================================
+            // HORÁRIO
+            // ==================================
+
+            const horario =
+                new Date()
+                    .toLocaleTimeString(
+                        "pt-BR",
+                        {
+                            timeZone:
+                                "America/Sao_Paulo",
+
+                            hour: "2-digit",
+
+                            minute: "2-digit"
+                        }
+                    );
+
+            // ==================================
+            // EMBED
+            // ==================================
+
+            const embed =
+                new EmbedBuilder()
+
+                    .setTitle(
+                        `🏷️ ${cargo.nome}`
+                    )
+
+                    .setDescription(
+                        lista
+                    )
+
+                    .setColor(
+                        role.color || "#2b2d31"
+                    )
+
+                    .setFooter({
+                        text:
+                            `♻️ Atualizado Automaticamente | ${horario}`
+                    })
+
+                    .setTimestamp();
+
+            // ==================================
+            // DADOS DA MENSAGEM
+            // ==================================
+
+            const dadosMensagem = {
+
+                content:
+                    `# ${role} - [${membrosCargo.length}] membros`,
+
+                allowedMentions: {
+
+                    roles: [
+                        role.id
+                    ],
+
+                    users:
+                        membrosCargo.map(
+                            member =>
+                                member.id
+                        )
+
+                },
+
+                embeds: [
+                    embed
+                ]
+
+            };
+
+            // ==================================
+            // EDITAR MENSAGEM EXISTENTE
+            // ==================================
+
+            if (
+                mensagensSalvas[cargo.id]
+            ) {
+
+                try {
+
+                    const mensagem =
+                        await canal.messages.fetch(
+                            mensagensSalvas[cargo.id]
+                        );
+
+                    await mensagem.edit(
+                        dadosMensagem
+                    );
+
+                    continue;
+
+                } catch {
+
+                    delete mensagensSalvas[
+                        cargo.id
+                    ];
+
+                }
 
             }
 
+            // ==================================
+            // CRIAR NOVA MENSAGEM
+            // ==================================
+
+            const novaMensagem =
+                await canal.send(
+                    dadosMensagem
+                );
+
+            mensagensSalvas[
+                cargo.id
+            ] = novaMensagem.id;
 
         }
 
+        // ==================================
+        // SALVAR IDS
+        // ==================================
 
-
-
-
-
-
-
-
-        const novaMensagem =
-        await canal.send(
-            dadosMensagem
+        salvarMensagens(
+            mensagensSalvas
         );
 
+        console.log(
+            "♻️ Hierarquia sincronizada!"
+        );
 
+    } catch (erro) {
 
+        console.error(
+            "❌ Erro dentro de atualizarHierarquia:",
+            erro
+        );
 
-
-        mensagensSalvas[cargo.id] =
-        novaMensagem.id;
-
-
-
-
+        throw erro;
 
     }
-
-
-
-
-
-
-
-
-
-    salvarMensagens(
-        mensagensSalvas
-    );
-
-
-
-
-
-
-    console.log(
-        "♻️ Hierarquia sincronizada!"
-    );
-
-
 
 }
