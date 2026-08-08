@@ -1,4 +1,4 @@
-
+```js
 import dotenv from "dotenv";
 dotenv.config();
 
@@ -53,9 +53,7 @@ console.log("🔑 TOKEN carregado com sucesso!");
 // ======================================
 
 async function limparCanalHierarquia() {
-
     try {
-
         const canal = await client.channels.fetch(
             "1527420188503576629"
         );
@@ -70,19 +68,16 @@ async function limparCanalHierarquia() {
         let mensagens;
 
         do {
-
             mensagens = await canal.messages.fetch({
                 limit: 100
             });
 
             for (const mensagem of mensagens.values()) {
-
                 try {
                     await mensagem.delete();
                 } catch {
                     // Ignorar erro de exclusao
                 }
-
             }
 
         } while (mensagens.size > 0);
@@ -90,12 +85,10 @@ async function limparCanalHierarquia() {
         console.log("✅ Canal limpo!");
 
     } catch (erro) {
-
         console.error(
             "❌ Erro limpando canal:",
             erro
         );
-
     }
 }
 
@@ -120,7 +113,6 @@ client.once("ready", async () => {
     // ==================================
 
     try {
-
         await atualizarHierarquia(client);
 
         console.log(
@@ -128,12 +120,10 @@ client.once("ready", async () => {
         );
 
     } catch (erro) {
-
         console.error(
             "❌ Erro primeira hierarquia:",
             erro
         );
-
     }
 
     // ==================================
@@ -147,7 +137,6 @@ client.once("ready", async () => {
         );
 
         try {
-
             await atualizarHierarquia(client);
 
             console.log(
@@ -155,12 +144,10 @@ client.once("ready", async () => {
             );
 
         } catch (erro) {
-
             console.error(
                 "❌ Erro atualizacao automatica:",
                 erro
             );
-
         }
 
     }, 60000);
@@ -189,9 +176,7 @@ async function iniciarBot() {
         );
 
         process.exit(1);
-
     }
-
 }
 
 iniciarBot();
