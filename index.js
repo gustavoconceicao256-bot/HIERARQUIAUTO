@@ -22,9 +22,7 @@ app.get("/", (req, res) => {
 const PORT = process.env.PORT || 3000;
 
 app.listen(PORT, () => {
-    console.log(
-        `🌐 Servidor web iniciado na porta ${PORT}`
-    );
+    console.log(`🌐 Servidor web iniciado na porta ${PORT}`);
 });
 
 // ===============================
@@ -33,8 +31,7 @@ app.listen(PORT, () => {
 
 const client = new Client({
     intents: [
-        GatewayIntentBits.Guilds,
-        GatewayIntentBits.GuildMembers
+        GatewayIntentBits.Guilds
     ]
 });
 
@@ -43,14 +40,6 @@ const client = new Client({
 // ===============================
 
 const TOKEN = process.env.TOKEN?.trim();
-
-console.log("========== DEBUG TOKEN ==========");
-console.log("TOKEN EXISTE:", !!TOKEN);
-console.log("TOKEN TEM PONTO:", TOKEN?.includes("."));
-console.log("TOKEN TAMANHO:", TOKEN?.length);
-console.log("TOKEN INICIAL:", TOKEN?.slice(0, 8));
-console.log("TOKEN FINAL:", TOKEN?.slice(-8));
-console.log("=================================");
 
 if (!TOKEN) {
     console.error("❌ TOKEN não encontrado!");
@@ -72,17 +61,11 @@ async function limparCanalHierarquia() {
         );
 
         if (!canal) {
-
-            console.log(
-                "❌ Canal não encontrado"
-            );
-
+            console.log("❌ Canal não encontrado!");
             return;
         }
 
-        console.log(
-            "🧹 Limpando canal..."
-        );
+        console.log("🧹 Limpando canal...");
 
         let mensagens;
 
@@ -95,24 +78,16 @@ async function limparCanalHierarquia() {
             for (const mensagem of mensagens.values()) {
 
                 try {
-
                     await mensagem.delete();
-
-                } catch (erro) {
-
-                    console.log(
-                        "⚠️ Não foi possível apagar uma mensagem."
-                    );
-
+                } catch {
+                    // Ignora mensagens que não puderem ser apagadas
                 }
 
             }
 
         } while (mensagens.size > 0);
 
-        console.log(
-            "✅ Canal limpo!"
-        );
+        console.log("✅ Canal limpo!");
 
     } catch (erro) {
 
@@ -128,124 +103,69 @@ async function limparCanalHierarquia() {
 // READY
 // ===============================
 
-client.once(
-    "ready",
-    async () => {
+client.once("ready", async () => {
+
+    console.log(
+        `✅ ${client.user.tag} está online!`
+    );
+
+    console.log(
+        `🆔 ID do bot: ${client.user.id}`
+    );
+
+    await limparCanalHierarquia();
+
+    // ===============================
+    // PRIMEIRA HIERARQUIA
+    // ===============================
+
+    try {
+
+        await atualizarHierarquia(client);
 
         console.log(
-            `✅ ${client.user.tag} está online!`
+            "✅ Hierarquia enviada!"
         );
+
+    } catch (erro) {
 
         console.log(
-            `🆔 ID do bot: ${client.user.id}`
+            "❌ Erro primeira hierarquia:",
+            erro
         );
 
-        await limparCanalHierarquia();
+    }
+
+    // ===============================
+    // ATUALIZAÇÃO AUTOMÁTICA
+    // ===============================
+
+    setInterval(async () => {
+
+        console.log(
+            "🔍 Checagem automática..."
+        );
 
         try {
 
             await atualizarHierarquia(client);
 
             console.log(
-                "✅ Hierarquia enviada!"
+                "♻️ Hierarquia atualizada!"
             );
 
         } catch (erro) {
 
             console.log(
-                "❌ Erro primeira hierarquia:",
+                "❌ Erro atualização automática:",
                 erro
             );
 
         }
 
-        // ===============================
-        // ATUALIZAÇÃO AUTOMÁTICA
-        // ===============================
+    }, 60000);
 
-        setInterval(
-            async () => {
-
-                console.log(
-                    "🔍 Checagem automática..."
-                );
-
-                try {
-
-                    await atualizarHierarquia(client);
-
-                    console.log(
-                        "♻️ Hierarquia atualizada!"
-                    );
-
-                } catch (erro) {
-
-                    console.log(
-                        "❌ Erro atualização automática:",
-                        erro
-                    );
-
-                }
-
-            },
-            60000
-        );
-
-    }
-);
-
-// ===============================
-// ALTERAÇÃO DE CARGO
-// ===============================
-
-let timerHierarquia = null;
-
-client.on(
-    "guildMemberUpdate",
-    (oldMember, newMember) => {
-
-        console.log(
-            "🔄 Mudança de cargo detectada!"
-        );
-
-        if (timerHierarquia) {
-
-            clearTimeout(timerHierarquia);
-
-        }
-
-        timerHierarquia = setTimeout(
-            async () => {
-
-                try {
-
-                    console.log(
-                        "⏳ Atualizando após mudança..."
-                    );
-
-                    await newMember.fetch();
-
-                    await atualizarHierarquia(client);
-
-                    console.log(
-                        "✅ Atualização concluída!"
-                    );
-
-                } catch (erro) {
-
-                    console.log(
-                        "❌ Erro atualização cargo:",
-                        erro
-                    );
-
-                }
-
-            },
-            5000
-        );
-
-    }
-);
+});
 
 // ===============================
 // LOGIN
