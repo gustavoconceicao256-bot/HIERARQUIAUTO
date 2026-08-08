@@ -1,3 +1,4 @@
+```js
 import dotenv from "dotenv";
 dotenv.config();
 
@@ -7,17 +8,45 @@ import express from "express";
 import "./utils/keepalive/keepalive.js";
 import { atualizarHierarquia } from "./utils/atualizarHierarquia.js";
 
+// ================================
+// CONFIGURAÇÕES
+// ================================
+
 const app = express();
+
+const PORT = process.env.PORT || 10000;
+const TOKEN = process.env.TOKEN?.trim();
+
+const CANAL_HIERARQUIA = "1527420188503576629";
+
+// ================================
+// VERIFICAR TOKEN
+// ================================
+
+if (!TOKEN) {
+    console.error("❌ TOKEN nao encontrado!");
+    process.exit(1);
+}
+
+console.log("✅ TOKEN carregado com sucesso!");
+
+// ================================
+// SERVIDOR WEB
+// ================================
 
 app.get("/", (req, res) => {
     res.send("Bot de hierarquia online!");
 });
 
-const PORT = process.env.PORT || 3000;
-
-app.listen(PORT, () => {
-    console.log("Servidor web iniciado na porta " + PORT);
+app.listen(PORT, "0.0.0.0", () => {
+    console.log(
+        `🌐 Servidor web iniciado na porta ${PORT}`
+    );
 });
+
+// ================================
+// CLIENT DISCORD
+// ================================
 
 const client = new Client({
     intents: [
@@ -26,27 +55,29 @@ const client = new Client({
     ]
 });
 
-const TOKEN = process.env.TOKEN?.trim();
-
-if (!TOKEN) {
-    console.error("TOKEN nao encontrado!");
-    process.exit(1);
-}
-
-console.log("TOKEN carregado com sucesso!");
+// ================================
+// LIMPAR CANAL
+// ================================
 
 async function limparCanalHierarquia() {
     try {
         const canal = await client.channels.fetch(
-            "1527420188503576629"
+            CANAL_HIERARQUIA
         );
 
         if (!canal) {
-            console.log("Canal nao encontrado!");
+            console.log("❌ Canal nao encontrado!");
             return;
         }
 
-        console.log("Limpando canal...");
+        if (!canal.isTextBased()) {
+            console.log(
+                "❌ O canal nao e um canal de texto!"
+            );
+            return;
+        }
+
+        console.log("🧹 Limpando canal...");
 
         let mensagens;
 
@@ -55,88 +86,126 @@ async function limparCanalHierarquia() {
                 limit: 100
             });
 
+            if (mensagens.size === 0) {
+                break;
+            }
+
             for (const mensagem of mensagens.values()) {
                 try {
                     await mensagem.delete();
-                } catch {}
+                } catch (erro) {
+                    console.log(
+                        "⚠️ Nao foi possivel apagar uma mensagem."
+                    );
+                }
             }
 
         } while (mensagens.size > 0);
 
-        console.log("Canal limpo!");
+        console.log("✅ Canal limpo!");
 
     } catch (erro) {
         console.error(
-            "Erro limpando canal:",
+            "❌ Erro limpando canal:",
             erro
         );
     }
 }
 
+// ================================
+// BOT ONLINE
+// ================================
+
 client.once("ready", async () => {
 
+    console.log("");
+    console.log("================================");
     console.log(
-        "BOT ONLINE: " + client.user.tag
+        "🤖 BOT ONLINE: " + client.user.tag
     );
+    console.log(
+        "🆔 BOT ID: " + client.user.id
+    );
+    console.log("================================");
+    console.log("");
 
-    console.log(
-        "BOT ID: " + client.user.id
-    );
+    // ================================
+    // LIMPAR CANAL
+    // ================================
 
     await limparCanalHierarquia();
 
+    // ================================
+    // PRIMEIRA HIERARQUIA
+    // ================================
+
     try {
+
         await atualizarHierarquia(client);
 
         console.log(
-            "Hierarquia enviada!"
+            "✅ Hierarquia enviada!"
         );
 
     } catch (erro) {
+
         console.error(
-            "Erro primeira hierarquia:",
+            "❌ Erro primeira hierarquia:",
             erro
         );
     }
 
+    // ================================
+    // ATUALIZAÇÃO AUTOMÁTICA
+    // ================================
+
     setInterval(async () => {
 
         console.log(
-            "Checagem automatica..."
+            "🔄 Checagem automatica..."
         );
 
         try {
+
             await atualizarHierarquia(client);
 
             console.log(
-                "Hierarquia atualizada!"
+                "✅ Hierarquia atualizada!"
             );
 
         } catch (erro) {
+
             console.error(
-                "Erro atualizacao automatica:",
+                "❌ Erro atualizacao automatica:",
                 erro
             );
         }
 
     }, 60000);
-
 });
+
+// ================================
+// INICIAR BOT
+// ================================
 
 async function iniciarBot() {
 
     try {
 
+        console.log(
+            "🔐 Tentando conectar ao Discord..."
+        );
+
         await client.login(TOKEN);
 
         console.log(
-            "Login realizado!"
+            "✅ Login realizado!"
         );
 
     } catch (erro) {
 
         console.error(
-            "Erro login:",
+            "❌ Erro login:",
             erro
         );
 
@@ -145,3 +214,4 @@ async function iniciarBot() {
 }
 
 iniciarBot();
+```
