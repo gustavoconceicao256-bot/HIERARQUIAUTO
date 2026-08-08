@@ -6,12 +6,11 @@ import { Client, GatewayIntentBits } from "discord.js";
 import express from "express";
 
 import "./utils/keepalive/keepalive.js";
-
 import { atualizarHierarquia } from "./utils/atualizarHierarquia.js";
 
-// ===============================
-// SERVIDOR WEB KEEP ALIVE
-// ===============================
+// ======================================
+// SERVIDOR WEB
+// ======================================
 
 const app = express();
 
@@ -22,12 +21,13 @@ app.get("/", (req, res) => {
 const PORT = process.env.PORT || 3000;
 
 app.listen(PORT, () => {
-    console.log(`🌐 Servidor web iniciado na porta ${PORT}`);
+    console.log("Servidor web iniciado na porta " + PORT);
 });
 
-// ===============================
+// ======================================
 // CLIENT DISCORD
-// ===============================
+// TESTE: SOMENTE GUILDS
+// ======================================
 
 const client = new Client({
     intents: [
@@ -35,22 +35,22 @@ const client = new Client({
     ]
 });
 
-// ===============================
+// ======================================
 // TOKEN
-// ===============================
+// ======================================
 
 const TOKEN = process.env.TOKEN?.trim();
 
 if (!TOKEN) {
-    console.error("❌ TOKEN não encontrado!");
+    console.error("TOKEN nao encontrado!");
     process.exit(1);
 }
 
-console.log("🔑 TOKEN carregado com sucesso!");
+console.log("TOKEN carregado com sucesso!");
 
-// ===============================
+// ======================================
 // LIMPAR CANAL
-// ===============================
+// ======================================
 
 async function limparCanalHierarquia() {
 
@@ -61,11 +61,11 @@ async function limparCanalHierarquia() {
         );
 
         if (!canal) {
-            console.log("❌ Canal não encontrado!");
+            console.log("Canal nao encontrado!");
             return;
         }
 
-        console.log("🧹 Limpando canal...");
+        console.log("Limpando canal...");
 
         let mensagens;
 
@@ -80,70 +80,70 @@ async function limparCanalHierarquia() {
                 try {
                     await mensagem.delete();
                 } catch {
-                    // Ignora mensagens que não puderem ser apagadas
+                    // Ignorar erro de exclusao
                 }
 
             }
 
         } while (mensagens.size > 0);
 
-        console.log("✅ Canal limpo!");
+        console.log("Canal limpo!");
 
     } catch (erro) {
 
-        console.log(
-            "❌ Erro limpando canal:",
+        console.error(
+            "Erro limpando canal:",
             erro
         );
 
     }
 }
 
-// ===============================
+// ======================================
 // READY
-// ===============================
+// ======================================
 
 client.once("ready", async () => {
 
     console.log(
-        `✅ ${client.user.tag} está online!`
+        "BOT ONLINE: " + client.user.tag
     );
 
     console.log(
-        `🆔 ID do bot: ${client.user.id}`
+        "BOT ID: " + client.user.id
     );
 
     await limparCanalHierarquia();
 
-    // ===============================
+    // ==================================
     // PRIMEIRA HIERARQUIA
-    // ===============================
+    // ==================================
 
     try {
 
         await atualizarHierarquia(client);
 
         console.log(
-            "✅ Hierarquia enviada!"
+            "Hierarquia enviada!"
         );
 
     } catch (erro) {
 
-        console.log(
-            "❌ Erro primeira hierarquia:",
+        console.error(
+            "Erro primeira hierarquia:",
             erro
         );
 
     }
 
-    // ===============================
-    // ATUALIZAÇÃO AUTOMÁTICA
-    // ===============================
+    // ==================================
+    // ATUALIZACAO AUTOMATICA
+    // ==================================
 
     setInterval(async () => {
 
         console.log(
-            "🔍 Checagem automática..."
+            "Checagem automatica..."
         );
 
         try {
@@ -151,13 +151,13 @@ client.once("ready", async () => {
             await atualizarHierarquia(client);
 
             console.log(
-                "♻️ Hierarquia atualizada!"
+                "Hierarquia atualizada!"
             );
 
         } catch (erro) {
 
-            console.log(
-                "❌ Erro atualização automática:",
+            console.error(
+                "Erro atualizacao automatica:",
                 erro
             );
 
@@ -167,9 +167,9 @@ client.once("ready", async () => {
 
 });
 
-// ===============================
+// ======================================
 // LOGIN
-// ===============================
+// ======================================
 
 async function iniciarBot() {
 
@@ -178,13 +178,13 @@ async function iniciarBot() {
         await client.login(TOKEN);
 
         console.log(
-            "✅ Login realizado!"
+            "Login realizado!"
         );
 
     } catch (erro) {
 
         console.error(
-            "❌ Erro login:",
+            "Erro login:",
             erro
         );
 
