@@ -1,4 +1,4 @@
-
+```js
 import dotenv from "dotenv";
 dotenv.config();
 
@@ -78,13 +78,9 @@ async function limparCanalHierarquia() {
             for (const mensagem of mensagens.values()) {
 
                 try {
-
                     await mensagem.delete();
-
                 } catch {
-
                     // Ignorar erro de exclusao
-
                 }
 
             }
@@ -116,10 +112,6 @@ client.once("ready", async () => {
     console.log(
         "🆔 BOT ID: " + client.user.id
     );
-
-    // ==================================
-    // LIMPAR CANAL
-    // ==================================
 
     await limparCanalHierarquia();
 
