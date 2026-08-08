@@ -1,4 +1,4 @@
-
+```js
 import dotenv from "dotenv";
 dotenv.config();
 
@@ -39,9 +39,7 @@ const client = new Client({
 
 async function limparCanalHierarquia() {
     try {
-        const canal = await client.channels.fetch(
-            CANAL_HIERARQUIA
-        );
+        const canal = await client.channels.fetch(CANAL_HIERARQUIA);
 
         if (!canal) {
             console.log("Canal nao encontrado!");
@@ -66,26 +64,18 @@ async function limparCanalHierarquia() {
                 try {
                     await mensagem.delete();
                 } catch (erro) {
-                    console.log(
-                        "Nao foi possivel apagar uma mensagem."
-                    );
+                    console.log("Nao foi possivel apagar uma mensagem.");
                 }
             }
-
         } while (mensagens.size > 0);
 
         console.log("Canal limpo!");
-
     } catch (erro) {
-        console.error(
-            "Erro limpando canal:",
-            erro
-        );
+        console.error("Erro limpando canal:", erro);
     }
 }
 
 client.once("ready", async () => {
-
     console.log("================================");
     console.log("BOT ONLINE: " + client.user.tag);
     console.log("BOT ID: " + client.user.id);
@@ -95,56 +85,32 @@ client.once("ready", async () => {
 
     try {
         await atualizarHierarquia(client);
-
         console.log("Hierarquia enviada!");
-
     } catch (erro) {
-        console.error(
-            "Erro primeira hierarquia:",
-            erro
-        );
+        console.error("Erro primeira hierarquia:", erro);
     }
 
     setInterval(async () => {
-
         console.log("Checagem automatica...");
 
         try {
             await atualizarHierarquia(client);
-
-            console.log(
-                "Hierarquia atualizada!"
-            );
-
+            console.log("Hierarquia atualizada!");
         } catch (erro) {
-            console.error(
-                "Erro atualizacao automatica:",
-                erro
-            );
+            console.error("Erro atualizacao automatica:", erro);
         }
-
     }, 60000);
 });
 
 async function iniciarBot() {
-
     try {
-
-        console.log(
-            "Tentando conectar ao Discord..."
-        );
+        console.log("Tentando conectar ao Discord...");
 
         await client.login(TOKEN);
 
         console.log("Login realizado!");
-
     } catch (erro) {
-
-        console.error(
-            "Erro login:",
-            erro
-        );
-
+        console.error("Erro login:", erro);
         process.exit(1);
     }
 }
